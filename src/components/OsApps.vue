@@ -1,7 +1,7 @@
 <template>
   <div ref="el" class="os-apps" @contextmenu.prevent.stop="(e) => showRightMenu(e)">
-    <os-window :move-bar="moveBar">
-      <div style="width: 100%; height: 40px; background-color: #f00" ref="moveBar"></div>
+    <os-window :moveBar>
+      <div style="width: 100%; height: 28px; background-color: #fff" ref="moveBar"></div>
     </os-window>
     <span ref="select" class="select"></span>
   </div>
@@ -14,10 +14,15 @@ import type { MenuItem } from './contextmenu/type'
 
 import OsWindow from './OsWindow.vue'
 
+interface EL extends HTMLElement {
+  __mouseDown: MouseEvent
+  __rect: DOMRect
+}
+
 const el = ref<EL>()
 const select = ref<EL>()
 
-const moveBar = ref<EL>()
+const moveBar = ref<HTMLElement>()
 
 const elMouseDown = (e: MouseEvent) => {
   if (e.button !== 0) {
