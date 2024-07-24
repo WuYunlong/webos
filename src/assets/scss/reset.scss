@@ -1,0 +1,31 @@
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+html {
+  touch-action: none;
+  -webkit-user-scalable: no;
+}
+
+.settingsIcon {
+  font-family: 'SettingsIcons';
+}
+
+.os-context-menu-list {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+
+.os-context-menu-item {
+  position: relative;
+}
