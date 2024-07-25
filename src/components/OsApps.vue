@@ -2,46 +2,120 @@
   <div ref="el" class="os-apps" @contextmenu.prevent.stop="(e) => showRightMenu(e)">
     <div class="win-drap">
       <div class="item item-1-1">
-        <span class="_01 lt lb h"></span>
-        <span class="_02 rt rb h"></span>
+        <span
+          class="_01 lt lb h"
+          @click="centerWin"
+          @mouseenter="mouseEnter([0, 0, 50, 100])"
+          @mouseleave="mouseLeave"
+        ></span>
+        <span
+          class="_02 rt rb h"
+          @mouseenter="mouseEnter([50, 0, 50, 100])"
+          @mouseleave="mouseLeave"
+        ></span>
       </div>
       <div class="item item-3-1">
-        <span class="_01 lt lb h"></span>
-        <span class="_02 rt rb h"></span>
+        <span
+          class="_01 lt lb h"
+          @mouseenter="mouseEnter([0, 0, 60, 100])"
+          @mouseleave="mouseLeave"
+        ></span>
+        <span
+          class="_02 rt rb h"
+          @mouseenter="mouseEnter([60, 0, 40, 100])"
+          @mouseleave="mouseLeave"
+        ></span>
       </div>
       <div class="item item-1-11">
-        <span class="_01 lt lb h"></span>
+        <span
+          class="_01 lt lb h"
+          @mouseenter="mouseEnter([0, 0, 50, 100])"
+          @mouseleave="mouseLeave"
+        ></span>
         <span class="_02">
-          <span class="_03 rt h"></span>
-          <span class="_04 rb h"></span>
+          <span
+            class="_03 rt h"
+            @mouseenter="mouseEnter([50, 0, 50, 50])"
+            @mouseleave="mouseLeave"
+          ></span>
+          <span
+            class="_04 rb h"
+            @mouseenter="mouseEnter([50, 50, 50, 50])"
+            @mouseleave="mouseLeave"
+          ></span>
         </span>
       </div>
       <div class="item item-11-11">
         <span class="_01">
-          <span class="_03 lt h"></span>
-          <span class="_04 lb h"></span>
+          <span
+            class="_03 lt h"
+            @mouseenter="mouseEnter([0, 0, 50, 50])"
+            @mouseleave="mouseLeave"
+          ></span>
+          <span
+            class="_04 lb h"
+            @mouseenter="mouseEnter([0, 50, 50, 50])"
+            @mouseleave="mouseLeave"
+          ></span>
         </span>
         <span class="_02">
-          <span class="_05 rt h"></span>
-          <span class="_06 rb h"></span>
+          <span
+            class="_05 rt h"
+            @mouseenter="mouseEnter([50, 0, 50, 50])"
+            @mouseleave="mouseLeave"
+          ></span>
+          <span
+            class="_06 rb h"
+            @mouseenter="mouseEnter([50, 50, 50, 50])"
+            @mouseleave="mouseLeave"
+          ></span>
         </span>
       </div>
       <div class="item item-1-1-1">
-        <span class="_01 lt lb h"></span>
-        <span class="_02 h"></span>
-        <span class="_03 rt rb h"></span>
+        <span
+          class="_01 lt lb h"
+          @mouseenter="mouseEnter([0, 0, 33.333, 100])"
+          @mouselevel="mouseLeave"
+        ></span>
+        <span
+          class="_02 h"
+          @mouseenter="mouseEnter([33.333, 0, 33.333, 100])"
+          @mouselevel="mouseLeave"
+        ></span>
+        <span
+          class="_03 rt rb h"
+          @mouseenter="mouseEnter([66.666, 0, 33.333, 100])"
+          @mouselevel="mouseLeave"
+        ></span>
       </div>
       <div class="item item-1-2-1">
-        <span class="_01 lt lb h"></span>
-        <span class="_02 h"></span>
-        <span class="_03 rt rb h"></span>
+        <span
+          class="_01 lt lb h"
+          @mouseenter="mouseEnter([0, 0, 25, 100])"
+          @mouselevel="mouseLeave"
+        ></span>
+        <span
+          class="_02 h"
+          @mouseenter="mouseEnter([25, 0, 50, 100])"
+          @mouselevel="mouseLeave"
+        ></span>
+        <span
+          class="_03 rt rb h"
+          @mouseenter="mouseEnter([75, 0, 25, 100])"
+          @mouselevel="mouseLeave"
+        ></span>
       </div>
     </div>
-    <div class="win-tips">
-      <div class="inner"></div>
+    <div class="win-tips-wrap" v-show="showPlaceHolder">
+      <div ref="placeholder" class="win-tips">
+        <div class="inner"></div>
+      </div>
     </div>
-    <os-window :moveBar @move="winMove">
+    <os-window ref="win" :moveBar @move="winMove">
       <div style="width: 100%; height: 48px; background-color: #fff" ref="moveBar"></div>
+    </os-window>
+    <os-window ref="wins" :moveBar="moveBars" @move="winMove">
+      <div style="width: 100%; height: 48px; background-color: #fff" ref="moveBars"></div>
     </os-window>
     <span ref="select" class="select"></span>
   </div>
@@ -50,6 +124,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
 import { showMenu } from './contextmenu'
+import { inBox } from '@/utils'
 import type { MenuItem } from './contextmenu/type'
 
 import OsWindow from './OsWindow.vue'
@@ -60,14 +135,22 @@ interface EL extends HTMLElement {
 }
 
 const el = ref<EL>()
+const win = ref()
+const wins = ref()
 const select = ref<EL>()
-
 const moveBar = ref<HTMLElement>()
+const moveBars = ref<HTMLElement>()
 
+const centerWin = () => {
+  win.value!.setWinCenter()
+}
+
+let selectEL: EL
 const elMouseDown = (e: MouseEvent) => {
   if (e.button !== 0 || e.target !== el.value) {
     return
   }
+  selectEL = select.value
   el.value!.__mouseDown = e
   document.addEventListener('mousemove', elMouseMove)
   document.addEventListener('mouseup', elMouseUp)
@@ -92,11 +175,12 @@ const elMouseMove = (e: MouseEvent) => {
   }
   w = Math.abs(w)
   h = Math.abs(h)
-  select.value!.style.opacity = '1'
-  select.value!.style.left = `${left}px`
-  select.value!.style.top = `${top}px`
-  select.value!.style.width = `${w}px`
-  select.value!.style.height = `${h}px`
+
+  selectEL.style.opacity = '1'
+  selectEL.style.left = `${left}px`
+  selectEL.style.top = `${top}px`
+  selectEL.style.width = `${w}px`
+  selectEL.style.height = `${h}px`
 }
 
 const elMouseUp = () => {
@@ -174,8 +258,34 @@ onMounted(async () => {
 
 // 窗口移动中
 const winMove = (e: MouseEvent) => {
-  console.log(e.clientX, e.clientY)
+  console.log(`winMove`)
+  for (const item of items) {
+    if (inBox(e, item.getBoundingClientRect())) {
+      item.classList.add('active')
+    } else {
+      item.classList.remove('active')
+    }
+  }
 }
+
+const showPlaceHolder = ref(false)
+const placeholder = ref<HTMLElement>()
+const mouseEnter = (pos: number[]) => {
+  placeholder.value!.style.left = `${pos[0]}%`
+  placeholder.value!.style.top = `${pos[1]}%`
+  placeholder.value!.style.width = `${pos[2]}%`
+  placeholder.value!.style.height = `${pos[3]}%`
+  showPlaceHolder.value = true
+}
+const mouseLeave = () => {
+  showPlaceHolder.value = false
+}
+
+let items: HTMLCollection[] = []
+onMounted(async () => {
+  await nextTick()
+  items = document.getElementsByClassName('h')
+})
 </script>
 
 <style scoped lang="scss">
@@ -212,7 +322,7 @@ const winMove = (e: MouseEvent) => {
   position: absolute;
   left: 50%;
   top: 24px;
-  transform: translate3d(-50%, 0, 0);
+  transform: translate3d(-50%, 50%, 0);
   background-color: #f1f5f7;
   backdrop-filter: blur(20px);
   box-sizing: border-box;
@@ -260,6 +370,7 @@ const winMove = (e: MouseEvent) => {
     .rb {
       border-bottom-right-radius: $radiusSize;
     }
+    .h.active,
     .h:hover {
       background-color: $hoverBgColor;
       border-color: $hoverBorderColor;
@@ -344,12 +455,15 @@ const winMove = (e: MouseEvent) => {
     }
   }
 }
-.win-tips {
+.win-tips-wrap {
   position: absolute;
   left: 0;
   top: 0;
-  width: 50%;
+  right: 0;
   bottom: 48px;
+}
+.win-tips {
+  position: absolute;
   .inner {
     position: absolute;
     inset: 8px;

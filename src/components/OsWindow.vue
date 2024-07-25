@@ -1,5 +1,5 @@
 <template>
-  <div class="os-window" :style ref="win" @contextmenu.stop.prevent>
+  <div class="os-window" ref="win" @contextmenu.stop.prevent>
     <div class="inner">
       <div class="head">
         <slot name="head" />
@@ -43,18 +43,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import type { PropType } from 'vue'
 
 interface EL extends HTMLElement {
   __rect: DOMRect
-  __mouseDown: MouseEvent
-  __positon: {
-    left: number
-    top: number
-    width: number
-    height: number
-  }
 }
 
 const props = defineProps({
@@ -62,95 +55,92 @@ const props = defineProps({
   height: { type: Number, default: 400 },
   top: { type: Number, default: 50 },
   left: { type: Number, default: 50 },
-  zIndex: { type: Number, default: 10 },
+  zIndex: { type: Number, default: 10000 },
   moveBar: { type: Object as PropType<HTMLElement>, default: undefined }
 })
 
-const emits = defineEmits(['move'])
-
-const width = ref<Number>(props.width)
-const left = ref<Number>(props.left)
-const top = ref<Number>(props.top)
-const height = ref<Number>(props.height)
-
-const style = computed(() => {
-  return {
-    width: `${width.value}px`,
-    height: `${height.value}px`,
-    top: `${top.value}px`,
-    left: `${left.value}px`,
-    zIndex: props.zIndex
-  }
-})
+const emits = defineEmits(['move', 'select'])
 
 const win = ref<EL>()
 
-const setPosition = (el: EL) => {
-  width.value = el.__positon.width
-  height.value = el.__positon.height
-  left.value = el.__positon.left
-  top.value = el.__positon.top
-}
+let { innerWidth, innerHeight } = window
+let isMoveBar = false
+let isResize = false
+
+let isResizeT = false
+let isResizeR = false
+let isResizeL = false
+let isResizeB = false
+
+let mouseDownClientX = 0
+let mouseDownClientY = 0
 
 const elMouseDown = (e: MouseEvent) => {
   e.stopPropagation()
-
   const winEl = win.value!
   winEl.__rect = win.value!.getBoundingClientRect()
-  winEl.__mouseDown = e
+
+  // 缓存变量 加速渲染
+  innerWidth = window.innerWidth
+  innerHeight = window.innerHeight
+  isMoveBar = e.target === props.moveBar
+  isResize = e.target.classList.contains('s')
+  isResizeT = e.target.classList.contains('t')
+  isResizeR = e.target.classList.contains('r')
+  isResizeL = e.target.classList.contains('l')
+  isResizeB = e.target.classList.contains('b')
+  mouseDownClientX = e.clientX
+  mouseDownClientY = e.clientY
 
   document.body.addEventListener('mousemove', elMouseMove)
   document.body.addEventListener('mouseup', elMouseUp)
-  document.body.addEventListener('mouseleave', elMouseUp)
+  // document.body.addEventListener('mouseleave', elMouseUp)
 }
 
 const elMouseMove = (e: MouseEvent) => {
   e.stopPropagation()
-  const { innerWidth, innerHeight } = window
-  const { clientX, clientY } = e
+  e.preventDefault()
+  emits('select')
+
   const winEL = win.value!
-  const target = winEL.__mouseDown.target as HTMLElement
-  const { clientX: ox, clientY: oy } = winEL.__mouseDown
+  const { clientX, clientY } = e
   const { left, top, width, height } = winEL.__rect
   let { left: l, top: t, width: w, height: h } = winEL.__rect
+  const changeX = clientX - mouseDownClientX
+  const changeY = clientY - mouseDownClientY
 
-  const cy = clientY - oy
-  const cx = clientX - ox
-
-  if (target === props.moveBar) {
-    l = left + cx
-    t = top + cy
-    l = -width / 2 > l ? -width / 2 : l
-    l = innerWidth - width / 2 < l ? innerWidth - width / 2 : l
-    t = t < 0 ? 0 : t
-    t = innerHeight - 96 < t ? innerHeight - 96 : t
+  if (isMoveBar) {
+    const p = { clientX: left + changeX, clientY: top + changeY }
+    const box = { x1: -width / 2, y1: 0, x2: innerWidth - width / 2, y2: innerHeight - 96 }
+    l = Math.max(Math.min(p.clientX, box.x2), box.x1)
+    t = Math.max(Math.min(p.clientY, box.y2), box.y1)
     emits('move', e)
-  } else if (target.classList.contains('s')) {
-    if (target.classList.contains('t')) {
-      t = top + cy
-      h = height - cy
+  } else if (isResize) {
+    if (isResizeT) {
+      t = top + changeY
+      h = height - changeY
     }
-    if (target.classList.contains('r')) {
-      w = width + cx
+    if (isResizeR) {
+      w = width + changeX
     }
-    if (target.classList.contains('b')) {
-      h = height + cy
+    if (isResizeB) {
+      h = height + changeY
     }
-    if (target.classList.contains('l')) {
-      l = left + cx
-      w = width - cx
+    if (isResizeL) {
+      l = left + changeX
+      w = width - changeX
     }
   }
+
   if (l != left || t != top || w != width || h != height) {
-    winEL.__positon = { left: l, top: t, width: w, height: h }
-    setPosition(winEL)
+    setWinPos(l, t, w, h)
   }
 }
 
 const elMouseUp = () => {
   document.body.removeEventListener('mousemove', elMouseMove)
   document.body.removeEventListener('mouseup', elMouseUp)
-  document.body.removeEventListener('mouseleave', elMouseUp)
+  // document.body.removeEventListener('mouseleave', elMouseUp)
 }
 
 let timer: number
@@ -171,10 +161,35 @@ const barMinSizeMouseLeave = () => {
   subMenuShow.value = false
 }
 
+const setWinPos = (x: number, y: number, w: number, h: number) => {
+  const el = win.value!
+  el.style.width = `${w}px`
+  el.style.height = `${h}px`
+  el.style.left = `${x}px`
+  el.style.top = `${y}px`
+}
+
+const setWinCenter = () => {
+  const { width, height } = win.value!.getBoundingClientRect()
+  const { innerWidth, innerHeight } = window
+  const x = (innerWidth - width) / 2
+  const y = (innerHeight - height) / 2
+  setWinPos(x, y, width, height)
+}
+
 onMounted(async () => {
   await nextTick()
+  setWinPos(props.left, props.top, props.width, props.height)
+  win.value!.style.zIndex = props.zIndex.toString()
   win.value!.addEventListener('mousedown', elMouseDown)
 })
+
+onUnmounted(() => {
+  win.value!.removeEventListener('mousedown', elMouseDown)
+  window.removeEventListener('resize', winResize)
+})
+
+defineExpose({ setWinPos, setWinCenter })
 </script>
 
 <style scoped lang="scss">
