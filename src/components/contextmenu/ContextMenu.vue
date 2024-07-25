@@ -8,7 +8,7 @@
             <os-icon :name="item.icon"></os-icon>
           </span>
           <span class="text">{{ item.label }}</span>
-          <span class="arrow">
+          <span class="arrow" v-if="item.children">
             <os-icon name="chevron_right_fill" />
           </span>
         </li>
@@ -23,7 +23,7 @@ import type { PropType } from 'vue'
 import type { MenuItem } from './type'
 import OsIcon from '../OsIcon.vue'
 
-const el = ref<EL>()
+const el = ref<HTMLElement>()
 
 const props = defineProps({
   e: {
@@ -47,9 +47,21 @@ const style = computed(() => {
       h += 28
     }
   })
+  let w = 152
+
+  const { innerWidth, innerHeight } = window
+  let left = props.e.clientX
+  if (left + w > innerWidth) {
+    left = left - w
+  }
+  let top = props.e.clientY
+  if (top + h + 48 > innerHeight) {
+    top = top - h
+  }
+
   return {
-    left: `${props.e.clientX}px`,
-    top: `${props.e.clientY}px`,
+    left: `${left}px`,
+    top: `${top}px`,
     height: `${h}px`
   }
 })
@@ -82,10 +94,11 @@ onMounted(async () => {
   position: absolute;
   min-width: 152px;
   max-width: 200px;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   border-radius: 8px;
   user-select: none;
+  box-shadow: 2px 2px 16px rgba(0, 0, 0, 0.04);
 }
 ul {
   margin: 0;

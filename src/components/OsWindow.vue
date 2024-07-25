@@ -1,5 +1,5 @@
 <template>
-  <div class="os-window" :style ref="win">
+  <div class="os-window" :style ref="win" @contextmenu.stop.prevent>
     <div class="inner">
       <div class="head">
         <slot name="head" />
@@ -15,15 +15,22 @@
       <div class="foot">
         <slot name="foot" />
       </div>
-      <div class="win-bar">
-        <button class="bar-item"><os-icon name="subtract_fill" /></button>
-        <button class="bar-item">
-          <os-icon name="maximize" />
-          <div class="bar-tips"></div>
-        </button>
-        <button class="bar-item bar-item-close"><os-icon name="close_fill" /></button>
-      </div>
     </div>
+
+    <div class="win-bar">
+      <button class="bar-item"><os-icon name="subtract_fill" /></button>
+      <button
+        class="bar-item"
+        :class="{ show: subMenuShow }"
+        @mouseenter="barMinSizeMouseEnter"
+        @mouseleave="barMinSizeMouseLeave"
+      >
+        <os-icon name="maximize" />
+        <div class="bar-tips"></div>
+      </button>
+      <button class="bar-item bar-item-close"><os-icon name="close_fill" /></button>
+    </div>
+
     <span class="s stl t l"></span>
     <span class="s st t"></span>
     <span class="s str t r"></span>
@@ -59,12 +66,19 @@ const props = defineProps({
   moveBar: { type: Object as PropType<HTMLElement>, default: undefined }
 })
 
+const emits = defineEmits(['move'])
+
+const width = ref<Number>(props.width)
+const left = ref<Number>(props.left)
+const top = ref<Number>(props.top)
+const height = ref<Number>(props.height)
+
 const style = computed(() => {
   return {
-    width: `${props.width}px`,
-    height: `${props.height}px`,
-    top: `${props.top}px`,
-    left: `${props.left}px`,
+    width: `${width.value}px`,
+    height: `${height.value}px`,
+    top: `${top.value}px`,
+    left: `${left.value}px`,
     zIndex: props.zIndex
   }
 })
@@ -72,24 +86,27 @@ const style = computed(() => {
 const win = ref<EL>()
 
 const setPosition = (el: EL) => {
-  const { top, left, width, height } = el.__positon
-  el.style.top = top + 'px'
-  el.style.left = left + 'px'
-  el.style.width = width + 'px'
-  el.style.height = height + 'px'
+  width.value = el.__positon.width
+  height.value = el.__positon.height
+  left.value = el.__positon.left
+  top.value = el.__positon.top
 }
 
 const elMouseDown = (e: MouseEvent) => {
+  e.stopPropagation()
+
   const winEl = win.value!
   winEl.__rect = win.value!.getBoundingClientRect()
   winEl.__mouseDown = e
 
   document.body.addEventListener('mousemove', elMouseMove)
   document.body.addEventListener('mouseup', elMouseUp)
+  document.body.addEventListener('mouseleave', elMouseUp)
 }
 
 const elMouseMove = (e: MouseEvent) => {
   e.stopPropagation()
+  const { innerWidth, innerHeight } = window
   const { clientX, clientY } = e
   const winEL = win.value!
   const target = winEL.__mouseDown.target as HTMLElement
@@ -103,8 +120,11 @@ const elMouseMove = (e: MouseEvent) => {
   if (target === props.moveBar) {
     l = left + cx
     t = top + cy
-    // winEL.__positon = { left: l, top: t, width, height }
-    // setPosition(winEL)
+    l = -width / 2 > l ? -width / 2 : l
+    l = innerWidth - width / 2 < l ? innerWidth - width / 2 : l
+    t = t < 0 ? 0 : t
+    t = innerHeight - 96 < t ? innerHeight - 96 : t
+    emits('move', e)
   } else if (target.classList.contains('s')) {
     if (target.classList.contains('t')) {
       t = top + cy
@@ -130,6 +150,25 @@ const elMouseMove = (e: MouseEvent) => {
 const elMouseUp = () => {
   document.body.removeEventListener('mousemove', elMouseMove)
   document.body.removeEventListener('mouseup', elMouseUp)
+  document.body.removeEventListener('mouseleave', elMouseUp)
+}
+
+let timer: number
+const subMenuShow = ref(false)
+const barMinSizeMouseEnter = () => {
+  if (timer) {
+    clearTimeout(timer)
+  }
+  timer = setTimeout(() => {
+    subMenuShow.value = true
+  }, 1000)
+}
+
+const barMinSizeMouseLeave = () => {
+  if (timer) {
+    clearTimeout(timer)
+  }
+  subMenuShow.value = false
 }
 
 onMounted(async () => {
@@ -148,9 +187,10 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   background-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(20px);
   overflow: hidden;
   border-radius: 8px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
 }
 $size: 8px;
 $sizeHalf: 4px;
@@ -229,22 +269,30 @@ $sizeHalf: 4px;
     padding: 0;
     background-color: transparent;
   }
+  .bar-item-close {
+    border-radius: 0 6px 0 0;
+  }
   .bar-item:hover {
     background-color: rgba(0, 0, 0, 0.05);
   }
   .bar-item-close:hover {
     color: #fff;
-    background-color: rgba(255, 0, 0, 0.8);
+    background-color: #c42b1d;
   }
   .bar-tips {
     position: absolute;
     top: 28px;
-    right: -20px;
+    left: 50%;
     width: 200px;
     height: 120px;
+    transform: translate3d(-50%, 0, 0);
     background-color: #fff;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     border-radius: 6px;
+    display: none;
+  }
+  .show .bar-tips {
+    display: block;
   }
 }
 </style>

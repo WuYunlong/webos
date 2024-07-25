@@ -1,5 +1,5 @@
 <template>
-  <div class="os-desktop">
+  <div class="os-desktop" @contextmenu.prevent.stop>
     <slot />
   </div>
 </template>
