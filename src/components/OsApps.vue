@@ -1,197 +1,29 @@
 <template>
-  <div ref="el" class="os-apps" @contextmenu.prevent.stop="(e) => showRightMenu(e)">
-    <div class="win-drap">
-      <div class="item item-1-1">
-        <span
-          class="_01 lt lb h"
-          @click="centerWin"
-          @mouseenter="mouseEnter([0, 0, 50, 100])"
-          @mouseleave="mouseLeave"
-        ></span>
-        <span
-          class="_02 rt rb h"
-          @mouseenter="mouseEnter([50, 0, 50, 100])"
-          @mouseleave="mouseLeave"
-        ></span>
-      </div>
-      <div class="item item-3-1">
-        <span
-          class="_01 lt lb h"
-          @mouseenter="mouseEnter([0, 0, 60, 100])"
-          @mouseleave="mouseLeave"
-        ></span>
-        <span
-          class="_02 rt rb h"
-          @mouseenter="mouseEnter([60, 0, 40, 100])"
-          @mouseleave="mouseLeave"
-        ></span>
-      </div>
-      <div class="item item-1-11">
-        <span
-          class="_01 lt lb h"
-          @mouseenter="mouseEnter([0, 0, 50, 100])"
-          @mouseleave="mouseLeave"
-        ></span>
-        <span class="_02">
-          <span
-            class="_03 rt h"
-            @mouseenter="mouseEnter([50, 0, 50, 50])"
-            @mouseleave="mouseLeave"
-          ></span>
-          <span
-            class="_04 rb h"
-            @mouseenter="mouseEnter([50, 50, 50, 50])"
-            @mouseleave="mouseLeave"
-          ></span>
-        </span>
-      </div>
-      <div class="item item-11-11">
-        <span class="_01">
-          <span
-            class="_03 lt h"
-            @mouseenter="mouseEnter([0, 0, 50, 50])"
-            @mouseleave="mouseLeave"
-          ></span>
-          <span
-            class="_04 lb h"
-            @mouseenter="mouseEnter([0, 50, 50, 50])"
-            @mouseleave="mouseLeave"
-          ></span>
-        </span>
-        <span class="_02">
-          <span
-            class="_05 rt h"
-            @mouseenter="mouseEnter([50, 0, 50, 50])"
-            @mouseleave="mouseLeave"
-          ></span>
-          <span
-            class="_06 rb h"
-            @mouseenter="mouseEnter([50, 50, 50, 50])"
-            @mouseleave="mouseLeave"
-          ></span>
-        </span>
-      </div>
-      <div class="item item-1-1-1">
-        <span
-          class="_01 lt lb h"
-          @mouseenter="mouseEnter([0, 0, 33.333, 100])"
-          @mouselevel="mouseLeave"
-        ></span>
-        <span
-          class="_02 h"
-          @mouseenter="mouseEnter([33.333, 0, 33.333, 100])"
-          @mouselevel="mouseLeave"
-        ></span>
-        <span
-          class="_03 rt rb h"
-          @mouseenter="mouseEnter([66.666, 0, 33.333, 100])"
-          @mouselevel="mouseLeave"
-        ></span>
-      </div>
-      <div class="item item-1-2-1">
-        <span
-          class="_01 lt lb h"
-          @mouseenter="mouseEnter([0, 0, 25, 100])"
-          @mouselevel="mouseLeave"
-        ></span>
-        <span
-          class="_02 h"
-          @mouseenter="mouseEnter([25, 0, 50, 100])"
-          @mouselevel="mouseLeave"
-        ></span>
-        <span
-          class="_03 rt rb h"
-          @mouseenter="mouseEnter([75, 0, 25, 100])"
-          @mouselevel="mouseLeave"
-        ></span>
-      </div>
-    </div>
-    <div class="win-tips-wrap" v-show="showPlaceHolder">
-      <div ref="placeholder" class="win-tips">
-        <div class="inner"></div>
-      </div>
-    </div>
-    <os-window ref="win" :moveBar @move="winMove">
-      <div style="width: 100%; height: 48px; background-color: #fff" ref="moveBar"></div>
+  <div ref="appsRef" class="os-apps" @contextmenu.prevent.stop="(e) => showRightMenu(e)">
+    <win-split ref="winSplitRef" />
+    <os-window ref="win" :moveBar @move="winMove" @moveEnd="winMoveEnd">
+      <div style="width: 100%; height: 44px; background-color: #fff" ref="moveBar"></div>
     </os-window>
-    <os-window ref="wins" :moveBar="moveBars" @move="winMove">
-      <div style="width: 100%; height: 48px; background-color: #fff" ref="moveBars"></div>
-    </os-window>
-    <span ref="select" class="select"></span>
+    <span ref="selectRef" class="select"></span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, provide } from 'vue'
 import { showMenu } from './contextmenu'
-import { inBox } from '@/utils'
+import { bindMouseMove } from '@/utils'
+
+import type { MoveRes } from '@/utils'
 import type { MenuItem } from './contextmenu/type'
 
 import OsWindow from './OsWindow.vue'
+import WinSplit from './widget/WinSplit.vue'
 
-interface EL extends HTMLElement {
-  __mouseDown: MouseEvent
-  __rect: DOMRect
-}
-
-const el = ref<EL>()
+const appsRef = ref<HTMLElement>()
 const win = ref()
-const wins = ref()
-const select = ref<EL>()
+const selectRef = ref<HTMLElement>()
+const winSplitRef = ref()
 const moveBar = ref<HTMLElement>()
-const moveBars = ref<HTMLElement>()
-
-const centerWin = () => {
-  win.value!.setWinCenter()
-}
-
-let selectEL: EL
-const elMouseDown = (e: MouseEvent) => {
-  if (e.button !== 0 || e.target !== el.value) {
-    return
-  }
-  selectEL = select.value
-  el.value!.__mouseDown = e
-  document.addEventListener('mousemove', elMouseMove)
-  document.addEventListener('mouseup', elMouseUp)
-}
-
-const elMouseMove = (e: MouseEvent) => {
-  const { clientX, clientY } = el.value!.__mouseDown
-  let w = e.clientX - clientX
-  let h = e.clientY - clientY
-
-  if (Math.abs(w) < 3 || Math.abs(h) < 3) {
-    return
-  }
-
-  let left = clientX
-  let top = clientY
-  if (w < 0) {
-    left = clientX + w
-  }
-  if (h < 0) {
-    top = clientY + h
-  }
-  w = Math.abs(w)
-  h = Math.abs(h)
-
-  selectEL.style.opacity = '1'
-  selectEL.style.left = `${left}px`
-  selectEL.style.top = `${top}px`
-  selectEL.style.width = `${w}px`
-  selectEL.style.height = `${h}px`
-}
-
-const elMouseUp = () => {
-  select.value!.style.transition = 'opacity 0.2s'
-  select.value!.style.opacity = '0'
-  setTimeout(() => {
-    select.value!.style.transition = ''
-  }, 200)
-  document.removeEventListener('mousemove', elMouseMove)
-  document.removeEventListener('mouseup', elMouseUp)
-}
 
 const showRightMenu = (e: MouseEvent) => {
   const items: MenuItem[] = [
@@ -251,40 +83,70 @@ const showRightMenu = (e: MouseEvent) => {
   showMenu({ e, items })
 }
 
-onMounted(async () => {
-  await nextTick()
-  el.value!.addEventListener('mousedown', elMouseDown)
-})
+// 选区事件
+const selectDown = (e: MouseEvent): boolean => {
+  return e.button === 0 && e.target === appsRef.value!
+}
+
+const selectMove = ({ start, move }: MoveRes) => {
+  let left = start.x
+  let top = start.y
+
+  if (move.x < 0) {
+    left = start.x + move.x
+  }
+  if (move.y < 0) {
+    top = start.y + move.y
+  }
+
+  selectRef.value!.style.opacity = '1'
+  selectRef.value!.style.left = `${left}px`
+  selectRef.value!.style.top = `${top}px`
+  selectRef.value!.style.width = `${Math.abs(move.x)}px`
+  selectRef.value!.style.height = `${Math.abs(move.y)}px`
+}
+
+const selectUp = () => {
+  selectRef.value!.style.transition = 'opacity 0.2s'
+  selectRef.value!.style.opacity = '0'
+  setTimeout(() => {
+    selectRef.value!.style.width = '0'
+    selectRef.value!.style.height = '0'
+    selectRef.value!.style.transition = ''
+  }, 200)
+}
+
+let timer: number
+const inSplitBox = () => {
+  if (timer) {
+    clearTimeout(timer)
+  }
+  timer = setTimeout(() => win.value.setWinThumb(), 17)
+}
+
+const outSplitBox = () => {
+  if (timer) {
+    clearTimeout(timer)
+  }
+  win.value.setWinUnthumb()
+}
+
+provide('inSplitBox', inSplitBox)
+provide('outSplitBox', outSplitBox)
 
 // 窗口移动中
 const winMove = (e: MouseEvent) => {
-  console.log(`winMove`)
-  for (const item of items) {
-    if (inBox(e, item.getBoundingClientRect())) {
-      item.classList.add('active')
-    } else {
-      item.classList.remove('active')
-    }
-  }
+  winSplitRef.value.checkMouseMove(e)
 }
 
-const showPlaceHolder = ref(false)
-const placeholder = ref<HTMLElement>()
-const mouseEnter = (pos: number[]) => {
-  placeholder.value!.style.left = `${pos[0]}%`
-  placeholder.value!.style.top = `${pos[1]}%`
-  placeholder.value!.style.width = `${pos[2]}%`
-  placeholder.value!.style.height = `${pos[3]}%`
-  showPlaceHolder.value = true
-}
-const mouseLeave = () => {
-  showPlaceHolder.value = false
+const winMoveEnd = () => {
+  winSplitRef.value.reset()
+  win.value.setWinUnthumb()
 }
 
-let items: HTMLCollection[] = []
 onMounted(async () => {
   await nextTick()
-  items = document.getElementsByClassName('h')
+  bindMouseMove(appsRef.value!, selectMove, selectDown, selectUp)
 })
 </script>
 
@@ -301,22 +163,11 @@ onMounted(async () => {
   width: 0;
   height: 0;
   box-sizing: border-box;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(2, 120, 215, 0.2);
+  border: 1px solid rgba(2, 120, 215, 0.8);
   opacity: 0;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 200%;
-    height: 200%;
-    box-sizing: border-box;
-    border: 1px solid rgba(22, 93, 255, 0.3);
-    transform-origin: 0 0;
-    transform: scale(0.5);
-  }
 }
+
 .win-drap {
   height: 88px;
   position: absolute;
