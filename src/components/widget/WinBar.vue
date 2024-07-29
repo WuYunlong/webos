@@ -1,25 +1,31 @@
 <template>
   <div class="win-bar">
-    <button class="bar-item"><os-icon name="win_bar_min" /></button>
+    <button class="bar-item">
+      <OsIcon name="win_bar_min" />
+    </button>
     <button
       class="bar-item"
       :class="{ show: subMenuShow }"
       @mouseenter="mouseEnter"
       @mouseleave="mouseLeave"
     >
-      <os-icon name="win_bar_max" />
-      <div class="bar-tips"></div>
+      <OsIcon name="win_bar_max" />
+      <div class="bar-tips" />
     </button>
-    <button class="bar-item bar-item-close"><os-icon name="win_bar_close" /></button>
+    <button class="bar-item bar-item-close">
+      <OsIcon name="win_bar_close" />
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 
+import OsIcon from '../OsIcon.vue'
+
 let timer: number
 const subMenuShow = ref(false)
-const mouseEnter = () => {
+function mouseEnter() {
   if (timer) {
     clearTimeout(timer)
   }
@@ -27,7 +33,7 @@ const mouseEnter = () => {
     subMenuShow.value = true
   }, 1000)
 }
-const mouseLeave = () => {
+function mouseLeave() {
   if (timer) {
     clearTimeout(timer)
   }

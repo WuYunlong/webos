@@ -1,26 +1,26 @@
 <template>
   <div class="os-dock">
     <div class="inner">
-      <div class="left"></div>
+      <div class="left" />
       <div class="center">
         <button class="item">
-          <img src="/icon/Windows.svg" alt="" />
+          <img src="/icon/Windows.svg" alt="">
         </button>
         <button class="item">
-          <img src="/icon/Search.svg" alt="" />
+          <img src="/icon/SearchDark.svg" alt="">
         </button>
         <button class="item">
-          <img src="/icon/DesktopManiger.svg" alt="" />
+          <img src="/icon/DesktopManiger.svg" alt="">
         </button>
         <button class="item active">
-          <img src="/icon/FileExplorer.svg" alt="" />
-          <span class="dot"></span>
+          <img src="/icon/FileExplorer.svg" alt="">
+          <span class="dot" />
         </button>
         <button class="item">
-          <img src="/icon/MicrosoftEdge.svg" alt="" />
+          <img src="/icon/MicrosoftEdge.svg" alt="">
         </button>
       </div>
-      <div class="right"></div>
+      <div class="right" />
     </div>
   </div>
 </template>
@@ -68,7 +68,7 @@
     width: 38px;
     height: 38px;
     box-sizing: border-box;
-    margin: 0 8px;
+    margin: 0 4px;
     border-radius: 3px;
     display: flex;
     align-items: center;

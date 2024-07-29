@@ -2,14 +2,14 @@
   <div ref="el" class="context-menu" :style @contextmenu.prevent>
     <ul>
       <template v-for="(item, i) in props.items" :key="i">
-        <li v-if="item.type && item.type === 'line'" class="line"></li>
+        <li v-if="item.type && item.type === 'line'" class="line" />
         <li v-else @click.stop="handleClick(item)">
-          <span class="icon" v-if="item.icon">
-            <os-icon :name="item.icon"></os-icon>
+          <span v-if="item.icon" class="icon">
+            <OsIcon :name="item.icon" />
           </span>
           <span class="text">{{ item.label }}</span>
-          <span class="arrow" v-if="item.children">
-            <os-icon name="chevron_right_fill" />
+          <span v-if="item.children" class="arrow">
+            <OsIcon name="chevron_right_fill" />
           </span>
         </li>
       </template>
@@ -20,10 +20,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import type { PropType } from 'vue'
-import type { MenuItem } from './type'
 import OsIcon from '../OsIcon.vue'
-
-const el = ref<HTMLElement>()
+import type { MenuItem } from './type'
 
 const props = defineProps({
   e: {
@@ -38,16 +36,19 @@ const props = defineProps({
 
 const emits = defineEmits(['close'])
 
+const el = ref<HTMLElement>()
+
 const style = computed(() => {
   let h = 12
   props.items.forEach((item) => {
     if (item.type === 'line') {
       h += 11
-    } else {
+    }
+    else {
       h += 28
     }
   })
-  let w = 152
+  const w = 152
 
   const { innerWidth, innerHeight } = window
   let left = props.e.clientX
@@ -66,18 +67,20 @@ const style = computed(() => {
   }
 })
 
-const handleMouseDown = (e: MouseEvent) => {
+function handleMouseDown(e: MouseEvent) {
   if (!el.value!.contains(e.target as Node)) {
     close()
   }
 }
 
-const handleClick = (item: MenuItem) => {
-  item.click && item.click()
+function handleClick(item: MenuItem) {
+  if (typeof item.click === 'function') {
+    item.click()
+  }
   close(200)
 }
 
-const close = (dely = 0) => {
+function close(dely = 0) {
   document.removeEventListener('mousedown', handleMouseDown, true)
   el.value!.style.transition = 'opacity 0.2s'
   el.value!.style.opacity = '0'
@@ -125,6 +128,7 @@ li {
   .icon {
     width: 20px;
     height: 20px;
+    font-size: 20px;
   }
   .text {
     height: 20px;

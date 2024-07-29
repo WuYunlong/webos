@@ -5,7 +5,7 @@ import type { MenuOptions } from './type'
 
 let div: HTMLElement | null = null
 
-export const showMenu = (options: MenuOptions) => {
+export function showMenu(options: MenuOptions) {
   if (!div) {
     div = document.createElement('div')
     div.setAttribute('class', 'os-context-menu-list')

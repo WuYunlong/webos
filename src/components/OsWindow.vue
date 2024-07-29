@@ -1,35 +1,20 @@
 <template>
-  <div class="os-window" ref="win" @contextmenu.stop.prevent>
+  <div ref="win" class="os-window" @contextmenu.stop.prevent>
     <div class="inner">
-      <div class="head">
-        <slot name="head" />
-      </div>
-      <div class="body">
-        <div class="side">
-          <slot name="side" />
-        </div>
-        <div class="main">
-          <slot />
-        </div>
-      </div>
-      <div class="foot">
-        <slot name="foot" />
-      </div>
+      <slot />
     </div>
-    <win-bar />
-    <win-resize v-if="!isMoveBar" />
+    <WinBar />
+    <WinResize v-if="!isMoveBar" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
-import { bindMouseMove } from '@/utils'
-
-import type { PropType } from 'vue'
-import type { MoveRes } from '@/utils'
-
+import { inject, nextTick, onMounted, ref, watch } from 'vue'
 import WinBar from './widget/WinBar.vue'
 import WinResize from './widget/WinResize.vue'
+import { bindMouseMove } from '@/utils'
+
+import type { MoveRes } from '@/utils'
 
 const props = defineProps({
   width: { type: Number, default: 600 },
@@ -37,10 +22,29 @@ const props = defineProps({
   top: { type: Number, default: 200 },
   left: { type: Number, default: 200 },
   zIndex: { type: Number, default: 100 },
-  moveBar: { type: Object as PropType<HTMLElement>, default: undefined }
+  index: { type: Number, default: 0 }
 })
 
-const emits = defineEmits(['move', 'moveEnd', 'select'])
+const emits = defineEmits([
+  'blur',
+  'focus',
+  'show',
+  'hide',
+  'maximize',
+  'unmaximize',
+  'minimize',
+  'restore',
+  'resize',
+  'resized',
+  'will-move',
+  'moved',
+  'enter-full-screen',
+  'leave-full-screen',
+  'always-on-top-changed'
+])
+const winSelect = inject<(index: number) => void>('winSelect')
+const winMove = inject<(e: MouseEvent) => void>('winMove')
+const winMoveEnd = inject<() => void>('winMoveEnd')
 
 const win = ref<HTMLElement>()
 const zIndex = ref<number>(props.zIndex)
@@ -52,7 +56,7 @@ watch(
   }
 )
 
-const setWinPos = (x: number, y: number, w: number, h: number) => {
+function setWinPos(x: number, y: number, w: number, h: number) {
   // win.value!.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`
   win.value!.style.width = `${w}px`
   win.value!.style.height = `${h}px`
@@ -60,7 +64,7 @@ const setWinPos = (x: number, y: number, w: number, h: number) => {
   win.value!.style.top = `${y}px`
 }
 
-const setWinCenter = () => {
+function setWinCenter() {
   const { width, height } = win.value!.getBoundingClientRect()
   const { innerWidth, innerHeight } = window
   const x = (innerWidth - width) / 2
@@ -71,8 +75,8 @@ const setWinCenter = () => {
 // 窗口移动
 let winRect: DOMRect
 let { innerWidth, innerHeight } = window
-let isMoveBar = ref(false)
-let isResize = ref(false)
+const isMoveBar = ref(false)
+const isResize = ref(false)
 
 let isResizeT = false
 let isResizeR = false
@@ -83,14 +87,18 @@ let scale = 1
 let transformOrigin = '50%'
 let thumbMarginTop = 0
 
-const winMouseDown = (e: MouseEvent): boolean => {
-  e.stopPropagation()
+function winMouseDown(e: MouseEvent): boolean {
+  // e.stopPropagation()
   const target = e.target! as HTMLElement
+
+  if (typeof winSelect === 'function') {
+    winSelect(props.index)
+  }
 
   winRect = win.value!.getBoundingClientRect()
   innerWidth = window.innerWidth
   innerHeight = window.innerHeight
-  isMoveBar.value = target === props.moveBar
+  isMoveBar.value = target.classList.contains('drag')
   isResize.value = target.classList.contains('s')
   isResizeT = target.classList.contains('t')
   isResizeR = target.classList.contains('r')
@@ -100,26 +108,28 @@ const winMouseDown = (e: MouseEvent): boolean => {
   return true
 }
 
-const winMouseMove = (res: MoveRes, e?: MouseEvent) => {
-  e!.stopPropagation()
-  e!.preventDefault()
+function winMouseMove(res: MoveRes, e?: MouseEvent) {
+  // e!.stopPropagation()
+  // e!.preventDefault()
 
   const { left, top, width, height } = winRect
   let { left: l, top: t, width: w, height: h } = winRect
 
   // 开始判断
   if (isMoveBar.value) {
-    // if (scale == 1 && width != 200) {
     thumbMarginTop = res.start.y - top + 16
-
     transformOrigin = `${((res.start.x - left) * 100) / width}%`
-    // }
+
     const p = { clientX: left + res.move.x, clientY: top + res.move.y }
     const box = { x1: -width / 2, y1: 0, x2: innerWidth - width / 2, y2: innerHeight - 96 }
     l = Math.max(Math.min(p.clientX, box.x2), box.x1)
     t = Math.max(Math.min(p.clientY, box.y2), box.y1)
-    emits('move', e!)
-  } else if (isResize.value) {
+    if (typeof winMove === 'function') {
+      winMove(e!)
+    }
+    // emits('move', e!)
+  }
+  else if (isResize.value) {
     if (isResizeT) {
       t = top + res.move.y
       h = height - res.move.y
@@ -136,20 +146,23 @@ const winMouseMove = (res: MoveRes, e?: MouseEvent) => {
     }
   }
 
-  if (l != left || t != top || w != width || h != height) {
+  if (l !== left || t !== top || w !== width || h !== height) {
     setWinPos(l, t, w, h)
   }
 }
 
-const winMouseUp = () => {
+function winMouseUp() {
   if (isMoveBar.value) {
-    emits('moveEnd')
+    if (typeof winMoveEnd === 'function') {
+      winMoveEnd()
+    }
+    // emits('moveEnd')
   }
   isMoveBar.value = false
   isResize.value = false
 }
 
-const setWinThumb = () => {
+function setWinThumb() {
   if (zIndex.value < 10000) {
     zIndex.value += 10000
   }
@@ -160,8 +173,8 @@ const setWinThumb = () => {
   win.value!.style.transform = `scale(${scale})`
 }
 
-const setWinUnthumb = () => {
-  if (scale == 1 && win.value!.style.marginTop == '0') {
+function setWinUnthumb() {
+  if (scale === 1 && win.value!.style.marginTop === '0') {
     return
   }
   if (zIndex.value > 10000) {
@@ -181,6 +194,12 @@ onMounted(async () => {
 })
 
 defineExpose({ setWinPos, setWinCenter, setWinThumb, setWinUnthumb })
+
+// destroy close blur focus isFocused isDestroyed show showInactive hide isVisible
+// maximize unmaximize isMaximized  minimize restore isMinimized
+// setFullScreen isFullScreen isNormal setBackgroundColor setBounds getBounds
+// getBackgroundColor
+console.log(emits)
 </script>
 
 <style scoped lang="scss">

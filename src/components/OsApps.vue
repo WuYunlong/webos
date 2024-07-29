@@ -1,42 +1,46 @@
 <template>
   <div ref="appsRef" class="os-apps" @contextmenu.prevent.stop="(e) => showRightMenu(e)">
-    <win-split ref="winSplitRef" />
-    <os-window ref="win" :moveBar @move="winMove" @moveEnd="winMoveEnd">
-      <div style="width: 100%; height: 44px; background-color: #fff" ref="moveBar"></div>
-    </os-window>
-    <span ref="selectRef" class="select"></span>
+    <span ref="selectRef" class="select" />
+    <WinSplit ref="winSplitRef" />
+    <OsWindow v-for="(item, index) in list" :key="index" ref="apps" :index>
+      <component :is="item" />
+    </OsWindow>
+    <!-- <div class="icon settingsIcon"></div>
+    <div class="icon settingsIcon"></div> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, provide } from 'vue'
+import { nextTick, onMounted, provide, ref } from 'vue'
 import { showMenu } from './contextmenu'
-import { bindMouseMove } from '@/utils'
 
-import type { MoveRes } from '@/utils'
 import type { MenuItem } from './contextmenu/type'
 
 import OsWindow from './OsWindow.vue'
 import WinSplit from './widget/WinSplit.vue'
+import type { MoveRes } from '@/utils'
+import { bindMouseMove } from '@/utils'
 
+const list = ref<string[]>([])
+const app = ref()
+const apps = ref([])
 const appsRef = ref<HTMLElement>()
-const win = ref()
 const selectRef = ref<HTMLElement>()
 const winSplitRef = ref()
-const moveBar = ref<HTMLElement>()
 
-const showRightMenu = (e: MouseEvent) => {
+// 右键菜单
+function showRightMenu(e: MouseEvent) {
   const items: MenuItem[] = [
     {
       label: '查看',
-      icon: '',
+      icon: 'finder_view',
       click: () => {
-        console.log('查看')
+        list.value.push('VideoPlayer')
       }
     },
     {
       label: '排序方式',
-      icon: '',
+      icon: 'finder_sorting',
       click: () => {
         console.log('排序方式')
       }
@@ -53,14 +57,14 @@ const showRightMenu = (e: MouseEvent) => {
     },
     {
       label: '新建',
-      icon: '',
+      icon: 'finder_add',
       click: () => {
         console.log('新建')
       }
     },
     {
       label: '剪切',
-      icon: '',
+      icon: 'finder_cut',
       click: () => {
         console.log('剪切')
       }
@@ -84,11 +88,11 @@ const showRightMenu = (e: MouseEvent) => {
 }
 
 // 选区事件
-const selectDown = (e: MouseEvent): boolean => {
+function selectDown(e: MouseEvent): boolean {
   return e.button === 0 && e.target === appsRef.value!
 }
 
-const selectMove = ({ start, move }: MoveRes) => {
+function selectMove({ start, move }: MoveRes) {
   let left = start.x
   let top = start.y
 
@@ -106,7 +110,7 @@ const selectMove = ({ start, move }: MoveRes) => {
   selectRef.value!.style.height = `${Math.abs(move.y)}px`
 }
 
-const selectUp = () => {
+function selectUp() {
   selectRef.value!.style.transition = 'opacity 0.2s'
   selectRef.value!.style.opacity = '0'
   setTimeout(() => {
@@ -116,38 +120,50 @@ const selectUp = () => {
   }, 200)
 }
 
+// 窗口分割
 let timer: number
-const inSplitBox = () => {
+function inSplitBox() {
   if (timer) {
     clearTimeout(timer)
   }
-  timer = setTimeout(() => win.value.setWinThumb(), 17)
+  timer = setTimeout(() => app.value.setWinThumb(), 17)
 }
 
-const outSplitBox = () => {
+function outSplitBox() {
   if (timer) {
     clearTimeout(timer)
   }
-  win.value.setWinUnthumb()
+  app.value.setWinUnthumb()
 }
 
 provide('inSplitBox', inSplitBox)
 provide('outSplitBox', outSplitBox)
 
 // 窗口移动中
-const winMove = (e: MouseEvent) => {
+function winSelect(index: number) {
+  app.value = apps.value[index]
+}
+
+function winMove(e: MouseEvent) {
   winSplitRef.value.checkMouseMove(e)
 }
 
-const winMoveEnd = () => {
+function winMoveEnd() {
   winSplitRef.value.reset()
-  win.value.setWinUnthumb()
+  app.value.setWinUnthumb()
 }
+
+provide('winSelect', winSelect)
+provide('winMove', winMove)
+provide('winMoveEnd', winMoveEnd)
 
 onMounted(async () => {
   await nextTick()
   bindMouseMove(appsRef.value!, selectMove, selectDown, selectUp)
 })
+// getAllWindows 获取所有窗口
+// getFocusedWindow 获取当前窗口
+// fromId 根据ID获取实例
 </script>
 
 <style scoped lang="scss">
@@ -322,5 +338,12 @@ onMounted(async () => {
     backdrop-filter: blur(10px);
     border-radius: 8px;
   }
+}
+.icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

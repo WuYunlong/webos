@@ -2,7 +2,7 @@
   <div class="os-wallpaper">
     <div class="inner">
       <div class="img-wallpaper">
-        <img :src :alt />
+        <img :src :alt>
       </div>
     </div>
   </div>

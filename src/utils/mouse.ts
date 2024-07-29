@@ -8,25 +8,9 @@ export interface MoveRes {
   move: Point
 }
 
-export const bindMouseMove = (
-  el: HTMLElement,
-  move: (res: MoveRes, e?: MouseEvent) => void,
-  down: (e: MouseEvent) => boolean = () => true,
-  up: () => void = () => {}
-) => {
+export function bindMouseMove(el: HTMLElement, move: (res: MoveRes, e?: MouseEvent) => void, down: (e: MouseEvent) => boolean = () => true, up: () => void = () => {}) {
   let downClientX = 0
   let downClientY = 0
-  const onMouseDown = (e: MouseEvent) => {
-    if (typeof down === 'function') {
-      if (!down(e)) {
-        return
-      }
-    }
-    downClientX = e.clientX
-    downClientY = e.clientY
-    document.body.addEventListener('mousemove', onMouseMove)
-    document.body.addEventListener('mouseup', onMouseUp)
-  }
 
   const onMouseMove = (e: MouseEvent) => {
     const { clientX, clientY } = e
@@ -39,9 +23,23 @@ export const bindMouseMove = (
   }
 
   const onMouseUp = () => {
-    typeof up === 'function' && up()
+    if (typeof up === 'function') {
+      up()
+    }
     document.body.removeEventListener('mousemove', onMouseMove)
     document.body.removeEventListener('mouseup', onMouseUp)
+  }
+
+  const onMouseDown = (e: MouseEvent) => {
+    if (typeof down === 'function') {
+      if (!down(e)) {
+        return
+      }
+    }
+    downClientX = e.clientX
+    downClientY = e.clientY
+    document.body.addEventListener('mousemove', onMouseMove)
+    document.body.addEventListener('mouseup', onMouseUp)
   }
 
   el.addEventListener('mousedown', onMouseDown)

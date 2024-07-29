@@ -1,11 +1,11 @@
 <template>
-  <os-desktop>
-    <os-dock></os-dock>
-    <os-apps>
-      <os-window></os-window>
-    </os-apps>
-    <os-wallpaper></os-wallpaper>
-  </os-desktop>
+  <OsDesktop>
+    <OsDock />
+    <OsApps>
+      <OsWindow />
+    </OsApps>
+    <OsWallpaper />
+  </OsDesktop>
 </template>
 
 <script setup lang="ts">

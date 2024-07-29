@@ -2,47 +2,51 @@
   <div ref="splitRef" class="win-split-wrap" :class="{ tip, show }">
     <div class="win-split">
       <div class="item">
-        <span class="s _01"></span>
-        <span class="s _02"></span>
+        <span class="s _01" />
+        <span class="s _02" />
       </div>
       <div class="item">
-        <span class="s _03"></span>
-        <span class="s _04"></span>
+        <span class="s _03" />
+        <span class="s _04" />
       </div>
       <div class="item">
-        <span class="s _01"></span>
-        <span class="s _05"></span>
-        <span class="s _06"></span>
+        <span class="s _01" />
+        <span class="s _05" />
+        <span class="s _06" />
       </div>
       <div class="item">
-        <span class="s _07"></span>
-        <span class="s _08"></span>
-        <span class="s _05"></span>
-        <span class="s _06"></span>
+        <span class="s _07" />
+        <span class="s _08" />
+        <span class="s _05" />
+        <span class="s _06" />
       </div>
       <div class="item">
-        <span class="s _09"></span>
-        <span class="s _10"></span>
-        <span class="s _11"></span>
+        <span class="s _09" />
+        <span class="s _10" />
+        <span class="s _11" />
       </div>
       <div class="item">
-        <span class="s _12"></span>
-        <span class="s _13"></span>
-        <span class="s _14"></span>
+        <span class="s _12" />
+        <span class="s _13" />
+        <span class="s _14" />
       </div>
     </div>
   </div>
-  <div class="win-split-placeholder" ref="tipsWrapRef" v-show="show && scale">
-    <div class="placeholder" ref="tipsRef"><span class="inner"></span></div>
+  <div v-show="show && scale" ref="tipsWrapRef" class="win-split-placeholder">
+    <div ref="tipsRef" class="placeholder">
+      <span class="inner" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch, inject } from 'vue'
+import { inject, nextTick, onMounted, ref, watch } from 'vue'
 import { inBox } from '@/utils'
 
-const inSplitBox = inject<Function>('inSplitBox')
-const outSplitBox = inject<Function>('outSplitBox')
+let items: HTMLCollectionOf<Element> = document.getElementsByClassName('s')
+
+const inSplitBox = inject<() => void>('inSplitBox')
+const outSplitBox = inject<() => void>('outSplitBox')
 
 const tip = ref(false)
 const show = ref(false)
@@ -70,20 +74,16 @@ const posArr = [
   [25, 0, 50, 100],
   [75, 0, 25, 100]
 ]
-const setPlaceHolder = (name: string) => {
-  const index = parseInt(name.replace('_', ''), 10)
+function setPlaceHolder(name: string) {
+  const index = Number.parseInt(name.replace('_', ''), 10)
   const pos = posArr[index]
-
   const { width, height } = tipsWrapRef.value!.getBoundingClientRect()
-
-  // tipsRef.value!.style.left = `${(pos[0] / 100) * width}px`
-  // tipsRef.value!.style.top = `${(pos[1] / 100) * height}px`
   tipsRef.value!.style.transform = `translate3d(${(pos[0] / 100) * width}px, ${(pos[1] / 100) * height}px, 0)`
   tipsRef.value!.style.width = `${pos[2]}%`
   tipsRef.value!.style.height = `${pos[3]}%`
 }
 
-const checkMouseMove = (e: MouseEvent) => {
+function checkMouseMove(e: MouseEvent) {
   tip.value = e.clientY < 400
   show.value = inBox(e, splitRef.value!.getBoundingClientRect())
   scale.value = show.value && e.clientY > 24
@@ -96,13 +96,14 @@ const checkMouseMove = (e: MouseEvent) => {
         nowInBoxName = el.classList[1]
         setPlaceHolder(nowInBoxName)
       }
-    } else {
+    }
+    else {
       el.classList.remove('selected')
     }
   }
 }
 
-const reset = () => {
+function reset() {
   tip.value = false
   show.value = false
 }
@@ -110,13 +111,17 @@ const reset = () => {
 watch(
   () => scale.value,
   (v) => {
-    v ? inSplitBox && inSplitBox() : outSplitBox && outSplitBox()
+    if (v && typeof inSplitBox == 'function') {
+      inSplitBox()
+    }
+    else if (!v && typeof outSplitBox == 'function') {
+      outSplitBox()
+    }
   }
 )
 
 defineExpose({ checkMouseMove, reset })
 
-let items: HTMLCollectionOf<Element> = document.getElementsByClassName('s')
 onMounted(async () => {
   await nextTick()
   items = splitRef.value!.getElementsByClassName('s')

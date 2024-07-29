@@ -1,12 +1,12 @@
 <template>
-  <span class="s stl t l"></span>
-  <span class="s st t"></span>
-  <span class="s str t r"></span>
-  <span class="s sr r"></span>
-  <span class="s sbr b r"></span>
-  <span class="s sb b"></span>
-  <span class="s sbl b l"></span>
-  <span class="s sl l"></span>
+  <span class="s stl t l" />
+  <span class="s st t" />
+  <span class="s str t r" />
+  <span class="s sr r" />
+  <span class="s sbr b r" />
+  <span class="s sb b" />
+  <span class="s sbl b l" />
+  <span class="s sl l" />
 </template>
 
 <style scoped lang="scss">
