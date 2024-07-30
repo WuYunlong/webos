@@ -5,13 +5,12 @@
     <OsWindow v-for="(item, index) in list" :key="index" ref="apps" :index>
       <component :is="item" />
     </OsWindow>
-    <!-- <div class="icon settingsIcon"></div>
-    <div class="icon settingsIcon"></div> -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { nextTick, onMounted, provide, ref } from 'vue'
+import { filter, fromEvent } from 'rxjs'
 import { showMenu } from './contextmenu'
 
 import type { MenuItem } from './contextmenu/type'
@@ -21,7 +20,7 @@ import WinSplit from './widget/WinSplit.vue'
 import type { MoveRes } from '@/utils'
 import { bindMouseMove } from '@/utils'
 
-const list = ref<string[]>(['FileManager'])
+const list = ref<string[]>([])
 const app = ref()
 const apps = ref([])
 const appsRef = ref<HTMLElement>()
@@ -87,39 +86,6 @@ function showRightMenu(e: MouseEvent) {
   showMenu({ e, items })
 }
 
-// 选区事件
-function selectDown(e: MouseEvent): boolean {
-  return e.button === 0 && e.target === appsRef.value!
-}
-
-function selectMove({ start, move }: MoveRes) {
-  let left = start.x
-  let top = start.y
-
-  if (move.x < 0) {
-    left = start.x + move.x
-  }
-  if (move.y < 0) {
-    top = start.y + move.y
-  }
-
-  selectRef.value!.style.opacity = '1'
-  selectRef.value!.style.left = `${left}px`
-  selectRef.value!.style.top = `${top}px`
-  selectRef.value!.style.width = `${Math.abs(move.x)}px`
-  selectRef.value!.style.height = `${Math.abs(move.y)}px`
-}
-
-function selectUp() {
-  selectRef.value!.style.transition = 'opacity 0.2s'
-  selectRef.value!.style.opacity = '0'
-  setTimeout(() => {
-    selectRef.value!.style.width = '0'
-    selectRef.value!.style.height = '0'
-    selectRef.value!.style.transition = ''
-  }, 200)
-}
-
 // 窗口分割
 let timer: number
 function inSplitBox() {
@@ -128,14 +94,12 @@ function inSplitBox() {
   }
   timer = setTimeout(() => app.value.setWinThumb(), 17)
 }
-
 function outSplitBox() {
   if (timer) {
     clearTimeout(timer)
   }
   app.value.setWinUnthumb()
 }
-
 provide('inSplitBox', inSplitBox)
 provide('outSplitBox', outSplitBox)
 
@@ -143,23 +107,55 @@ provide('outSplitBox', outSplitBox)
 function winSelect(index: number) {
   app.value = apps.value[index]
 }
-
 function winMove(e: MouseEvent) {
   winSplitRef.value.checkMouseMove(e)
 }
-
 function winMoveEnd() {
   winSplitRef.value.reset()
   app.value.setWinUnthumb()
 }
-
 provide('winSelect', winSelect)
 provide('winMove', winMove)
 provide('winMoveEnd', winMoveEnd)
 
+function mouseMove(e: MouseEvent, info: { clientX: number, clientY: number }) {
+  const { clientX, clientY } = e as MouseEvent
+  const mw = clientX - info.clientX
+  const mh = clientY - info.clientY
+
+  const left = mw < 0 ? info.clientX + mw : info.clientX
+  const top = mh < 0 ? info.clientY + mh : info.clientY
+
+  selectRef.value!.style.opacity = '1'
+  selectRef.value!.style.left = `${left}px`
+  selectRef.value!.style.top = `${top}px`
+  selectRef.value!.style.width = `${Math.abs(mw)}px`
+  selectRef.value!.style.height = `${Math.abs(mh)}px`
+}
+
+function mouseDown(e: Event) {
+  const { clientX, clientY } = e as MouseEvent
+  const info = { clientX, clientY }
+
+  const moveSub = fromEvent(document, 'mousemove').subscribe(e => mouseMove(e, info))
+  const upSub = fromEvent(document, 'mouseup').subscribe(() => {
+    moveSub.unsubscribe()
+    upSub.unsubscribe()
+    selectRef.value!.style.transition = 'opacity 0.2s'
+    selectRef.value!.style.opacity = '0'
+    setTimeout(() => {
+      selectRef.value!.style.width = '0'
+      selectRef.value!.style.height = '0'
+      selectRef.value!.style.transition = ''
+    }, 200)
+  })
+}
+
 onMounted(async () => {
   await nextTick()
-  bindMouseMove(appsRef.value!, selectMove, selectDown, selectUp)
+  fromEvent(appsRef.value!, 'mousedown')
+    .pipe(filter(e => e.button === 0 && e.target === appsRef.value))
+    .subscribe(mouseDown)
 })
 // getAllWindows 获取所有窗口
 // getFocusedWindow 获取当前窗口
@@ -183,7 +179,6 @@ onMounted(async () => {
   border: 1px solid rgba(2, 120, 215, 0.8);
   opacity: 0;
 }
-
 .win-drap {
   height: 88px;
   position: absolute;

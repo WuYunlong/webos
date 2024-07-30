@@ -1,7 +1,7 @@
 <template>
   <div ref="wrap" class="wrap" @contextmenu.stop.prevent>
     <div ref="win" class="win">
-      <div class="info" :class="{ frame }">
+      <div class="info" :class="{ frame: options.frame }">
         <slot />
       </div>
       <div class="head drag">
@@ -11,14 +11,20 @@
         </div>
         <div class="bar">
           <button class="btn min">
-            <OsIcon name="win_bar_min" />
+            <span class="icon">
+              <OsIcon name="win_bar_min" />
+            </span>
           </button>
           <button class="btn max">
-            <OsIcon name="win_bar_max" />
+            <span class="icon">
+              <OsIcon name="win_bar_max" />
+            </span>
             <div class="bar-split" />
           </button>
           <button class="btn close">
-            <OsIcon name="win_bar_close" />
+            <span class="icon">
+              <OsIcon name="win_bar_close" />
+            </span>
           </button>
         </div>
       </div>
@@ -28,41 +34,23 @@
 </template>
 
 <script setup lang="ts">
-import { inject, nextTick, onMounted, ref, watch } from 'vue'
+import { inject, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { fromEvent } from 'rxjs'
 
+import type { PropType } from 'vue'
 import WinResize from './widget/WinResize.vue'
+import { Options } from '@/config/window'
+import type { OptionsWin } from '@/types/window'
+
 import OsIcon from '@/components/OsIcon.vue'
 
 const props = defineProps({
-  width: { type: Number, default: 600 },
-  height: { type: Number, default: 400 },
-  top: { type: Number, default: 200 },
-  left: { type: Number, default: 200 },
+  options: { type: Object as PropType<OptionsWin>, required: false, default: () => ({ }) },
   zIndex: { type: Number, default: 100 },
-  index: { type: Number, default: 0 },
-  frame: { type: Boolean, default: true }
+  index: { type: Number, default: 0 }
 })
 
-const emits = defineEmits([
-  'blur',
-  'focus',
-  'show',
-  'hide',
-  'maximize',
-  'unmaximize',
-  'minimize',
-  'restore',
-  'resize',
-  'resized',
-  'will-move',
-  'moved',
-  'enter-full-screen',
-  'leave-full-screen',
-  'always-on-top-changed'
-])
-
-console.log(emits)
+const options = Object.assign({}, props.options, Options)
 
 const winSelect = inject<(index: number) => void>('winSelect')
 const winMove = inject<(e: MouseEvent) => void>('winMove')
@@ -120,6 +108,7 @@ interface MouseDownInfo {
 function winMouseDown(e: Event) {
   const target = e.target! as HTMLElement
   if (typeof winSelect === 'function') {
+    console.log(winSelect)
     winSelect(props.index)
   }
 
@@ -210,8 +199,7 @@ function setWinUnthumb() {
 
 onMounted(async () => {
   await nextTick()
-
-  setWinPos(props.left, props.top, props.width, props.height)
+  setWinPos(options.x, options.y, options.width, options.height)
   wrap.value!.style.zIndex = zIndex.value.toString()
   fromEvent(wrap.value!, 'mousedown').subscribe(winMouseDown)
 })
@@ -276,12 +264,21 @@ defineExpose({ setWinPos, setWinCenter, setWinThumb, setWinUnthumb })
     width: 48px;
     height: 28px;
     box-sizing: border-box;
-    padding: 9px 19px;
     border: 0;
     margin: 0;
     font-size: 10px;
     background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+
+  .icon {
+    display: block;
+    width: 10px;
+    height: 10px;
+  }
+
   .btn.close {
     border-radius: 0 6px 0 0;
   }
