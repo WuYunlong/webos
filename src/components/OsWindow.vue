@@ -1,20 +1,38 @@
 <template>
-  <div ref="win" class="os-window" @contextmenu.stop.prevent>
-    <div class="inner">
-      <slot />
+  <div ref="wrap" class="wrap" @contextmenu.stop.prevent>
+    <div ref="win" class="win">
+      <div class="info" :class="{ frame }">
+        <slot />
+      </div>
+      <div class="head drag">
+        <div class="name">
+          <div class="icon" />
+          <div class="text" />
+        </div>
+        <div class="bar">
+          <button class="btn min">
+            <OsIcon name="win_bar_min" />
+          </button>
+          <button class="btn max">
+            <OsIcon name="win_bar_max" />
+            <div class="bar-split" />
+          </button>
+          <button class="btn close">
+            <OsIcon name="win_bar_close" />
+          </button>
+        </div>
+      </div>
+      <WinResize v-if="!isMoveBar" />
     </div>
-    <WinBar />
-    <WinResize v-if="!isMoveBar" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { inject, nextTick, onMounted, ref, watch } from 'vue'
-import WinBar from './widget/WinBar.vue'
-import WinResize from './widget/WinResize.vue'
-import { bindMouseMove } from '@/utils'
+import { fromEvent } from 'rxjs'
 
-import type { MoveRes } from '@/utils'
+import WinResize from './widget/WinResize.vue'
+import OsIcon from '@/components/OsIcon.vue'
 
 const props = defineProps({
   width: { type: Number, default: 600 },
@@ -22,7 +40,8 @@ const props = defineProps({
   top: { type: Number, default: 200 },
   left: { type: Number, default: 200 },
   zIndex: { type: Number, default: 100 },
-  index: { type: Number, default: 0 }
+  index: { type: Number, default: 0 },
+  frame: { type: Boolean, default: true }
 })
 
 const emits = defineEmits([
@@ -42,30 +61,32 @@ const emits = defineEmits([
   'leave-full-screen',
   'always-on-top-changed'
 ])
+
+console.log(emits)
+
 const winSelect = inject<(index: number) => void>('winSelect')
 const winMove = inject<(e: MouseEvent) => void>('winMove')
 const winMoveEnd = inject<() => void>('winMoveEnd')
 
+const wrap = ref<HTMLElement>()
 const win = ref<HTMLElement>()
 const zIndex = ref<number>(props.zIndex)
 
 watch(
   () => zIndex.value,
   (v) => {
-    win.value!.style.zIndex = v.toString()
+    wrap.value!.style.zIndex = v.toString()
   }
 )
 
 function setWinPos(x: number, y: number, w: number, h: number) {
-  // win.value!.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`
-  win.value!.style.width = `${w}px`
-  win.value!.style.height = `${h}px`
-  win.value!.style.left = `${x}px`
-  win.value!.style.top = `${y}px`
+  wrap.value!.style.transform = `translate3d(${x}px, ${y}px, 0)`
+  wrap.value!.style.width = `${w}px`
+  wrap.value!.style.height = `${h}px`
 }
 
 function setWinCenter() {
-  const { width, height } = win.value!.getBoundingClientRect()
+  const { width, height } = wrap.value!.getBoundingClientRect()
   const { innerWidth, innerHeight } = window
   const x = (innerWidth - width) / 2
   const y = (innerHeight - height) / 2
@@ -73,8 +94,6 @@ function setWinCenter() {
 }
 
 // 窗口移动
-let winRect: DOMRect
-let { innerWidth, innerHeight } = window
 const isMoveBar = ref(false)
 const isResize = ref(false)
 
@@ -85,19 +104,27 @@ let isResizeB = false
 
 let scale = 1
 let transformOrigin = '50%'
-let thumbMarginTop = 0
+let transformY = 0
 
-function winMouseDown(e: MouseEvent): boolean {
-  // e.stopPropagation()
+interface MouseDownInfo {
+  clientX: number
+  clientY: number
+  innerWidth: number
+  innerHeight: number
+  width: number
+  height: number
+  left: number
+  top: number
+}
+
+function winMouseDown(e: Event) {
   const target = e.target! as HTMLElement
-
   if (typeof winSelect === 'function') {
     winSelect(props.index)
   }
 
-  winRect = win.value!.getBoundingClientRect()
-  innerWidth = window.innerWidth
-  innerHeight = window.innerHeight
+  const { width, height, top, left } = wrap.value!.getBoundingClientRect()
+  const { innerWidth, innerHeight } = window
   isMoveBar.value = target.classList.contains('drag')
   isResize.value = target.classList.contains('s')
   isResizeT = target.classList.contains('t')
@@ -105,44 +132,58 @@ function winMouseDown(e: MouseEvent): boolean {
   isResizeL = target.classList.contains('l')
   isResizeB = target.classList.contains('b')
 
-  return true
+  const { clientX, clientY } = e as MouseEvent
+  scale = 200 / width
+  transformY = clientY - top + 16
+  transformOrigin = `${(clientX - left) * 100 / width}%`
+  const info = { clientX, clientY, width, height, left, top, innerWidth, innerHeight }
+  const moveSub = fromEvent(document, 'mousemove').subscribe(e => winMouseMove(e, info))
+  const upSub = fromEvent(document, 'mouseup').subscribe(() => {
+    if (isMoveBar.value) {
+      isMoveBar.value = false
+      if (typeof winMoveEnd === 'function') {
+        winMoveEnd()
+      }
+    }
+    isResize.value = false
+    transformY = 0
+    scale = 1
+    transformOrigin = '50%'
+    moveSub.unsubscribe()
+    upSub.unsubscribe()
+  })
 }
 
-function winMouseMove(res: MoveRes, e?: MouseEvent) {
-  // e!.stopPropagation()
-  // e!.preventDefault()
+function winMouseMove(e: Event, info: MouseDownInfo) {
+  const { clientX, clientY } = e as MouseEvent
+  const { left, top, width, height, innerWidth, innerHeight } = info
+  let { left: l, top: t, width: w, height: h } = info
+  const cx = clientX - info.clientX
+  const cy = clientY - info.clientY
 
-  const { left, top, width, height } = winRect
-  let { left: l, top: t, width: w, height: h } = winRect
-
-  // 开始判断
   if (isMoveBar.value) {
-    thumbMarginTop = res.start.y - top + 16
-    transformOrigin = `${((res.start.x - left) * 100) / width}%`
-
-    const p = { clientX: left + res.move.x, clientY: top + res.move.y }
+    const p = { clientX: left + cx, clientY: top + cy }
     const box = { x1: -width / 2, y1: 0, x2: innerWidth - width / 2, y2: innerHeight - 96 }
     l = Math.max(Math.min(p.clientX, box.x2), box.x1)
     t = Math.max(Math.min(p.clientY, box.y2), box.y1)
     if (typeof winMove === 'function') {
-      winMove(e!)
+      winMove(e as MouseEvent)
     }
-    // emits('move', e!)
   }
   else if (isResize.value) {
     if (isResizeT) {
-      t = top + res.move.y
-      h = height - res.move.y
+      t = top + cy
+      h = height - cy
     }
     if (isResizeR) {
-      w = width + res.move.x
+      w = width + cx
     }
     if (isResizeB) {
-      h = height + res.move.y
+      h = height + cy
     }
     if (isResizeL) {
-      l = left + res.move.x
-      w = width - res.move.x
+      l = left + cx
+      w = width - cx
     }
   }
 
@@ -151,46 +192,28 @@ function winMouseMove(res: MoveRes, e?: MouseEvent) {
   }
 }
 
-function winMouseUp() {
-  if (isMoveBar.value) {
-    if (typeof winMoveEnd === 'function') {
-      winMoveEnd()
-    }
-    // emits('moveEnd')
-  }
-  isMoveBar.value = false
-  isResize.value = false
-}
-
 function setWinThumb() {
   if (zIndex.value < 10000) {
     zIndex.value += 10000
   }
-  scale = 200 / win.value!.getBoundingClientRect().width
-  win.value!.style.marginTop = `${thumbMarginTop}px`
-  win.value!.style.transformOrigin = `${transformOrigin}  -16px`
-  win.value!.style.zIndex = `${zIndex.value}`
-  win.value!.style.transform = `scale(${scale})`
+  wrap.value!.style.zIndex = `${zIndex.value}`
+  win.value!.style.transformOrigin = `${transformOrigin} 0`
+  win.value!.style.transform = `translate3d(0, ${transformY}px, 0) scale(${scale})`
 }
 
 function setWinUnthumb() {
-  if (scale === 1 && win.value!.style.marginTop === '0') {
-    return
-  }
   if (zIndex.value > 10000) {
     zIndex.value -= 10000
   }
-  win.value!.style.marginTop = '0'
-  win.value!.style.zIndex = `${zIndex.value}`
-  win.value!.style.transform = `scale(1)`
-  scale = 1
+  win.value!.style.transform = `translate3d(0, 0, 0) scale(1)`
 }
 
 onMounted(async () => {
   await nextTick()
+
   setWinPos(props.left, props.top, props.width, props.height)
-  win.value!.style.zIndex = zIndex.value.toString()
-  bindMouseMove(win.value!, winMouseMove, winMouseDown, winMouseUp)
+  wrap.value!.style.zIndex = zIndex.value.toString()
+  fromEvent(wrap.value!, 'mousedown').subscribe(winMouseDown)
 })
 
 defineExpose({ setWinPos, setWinCenter, setWinThumb, setWinUnthumb })
@@ -199,25 +222,88 @@ defineExpose({ setWinPos, setWinCenter, setWinThumb, setWinUnthumb })
 // maximize unmaximize isMaximized  minimize restore isMinimized
 // setFullScreen isFullScreen isNormal setBackgroundColor setBounds getBounds
 // getBackgroundColor
-console.log(emits)
+// console.log(emits)
 </script>
 
 <style scoped lang="scss">
-.os-window {
-  display: block;
+.wrap {
   position: absolute;
   left: 0;
   top: 0;
-  transition: transform 0.2s;
 }
-.inner {
+
+.win {
+  display: block;
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
+  transform: translate3d(0, 0, 0) scale(1);
+  transition: transform 0.2s;
+}
+
+.info {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
   overflow: hidden;
+  z-index: 0;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  &.frame {
+    padding-top: 28px;
+  }
+}
+
+.head {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bar {
+  display: flex;
+
+  .btn {
+    position: relative;
+    width: 48px;
+    height: 28px;
+    box-sizing: border-box;
+    padding: 9px 19px;
+    border: 0;
+    margin: 0;
+    font-size: 10px;
+    background-color: transparent;
+  }
+  .btn.close {
+    border-radius: 0 6px 0 0;
+  }
+  .btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  .btn.close:hover {
+    color: #fff;
+    background-color: #c42b1d;
+  }
+}
+
+.bar-split {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  width: 200px;
+  height: 120px;
+  transform: translate3d(-50%, 0, 0);
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  display: none;
 }
 </style>

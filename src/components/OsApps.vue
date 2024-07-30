@@ -21,7 +21,7 @@ import WinSplit from './widget/WinSplit.vue'
 import type { MoveRes } from '@/utils'
 import { bindMouseMove } from '@/utils'
 
-const list = ref<string[]>([])
+const list = ref<string[]>(['FileManager'])
 const app = ref()
 const apps = ref([])
 const appsRef = ref<HTMLElement>()
@@ -35,7 +35,7 @@ function showRightMenu(e: MouseEvent) {
       label: '查看',
       icon: 'finder_view',
       click: () => {
-        list.value.push('VideoPlayer')
+        list.value.push('FileManager')
       }
     },
     {

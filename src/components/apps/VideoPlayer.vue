@@ -1,16 +1,10 @@
 <template>
-  <OsApp>
-    <div class="inner">
-      <div class="head drag" />
-      <div ref="video" class="video" />
-    </div>
-  </OsApp>
+  <div ref="video" class="video" />
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import Artplayer from 'artplayer'
-import OsApp from '@/components/OsApp.vue'
 
 const video = ref<HTMLDivElement>()
 onMounted(() => {
@@ -33,20 +27,6 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-.head {
-  width: 100%;
-  height: 40px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10;
-  background-color: rgba(255, 255, 255, 0);
-}
 .video {
   width: 100%;
   height: 100%;
