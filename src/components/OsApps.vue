@@ -32,21 +32,21 @@ function showRightMenu(e: MouseEvent) {
   const items: MenuItem[] = [
     {
       label: '查看',
-      icon: 'finder_view',
+      icon: 'menu_view',
       click: () => {
         list.value.push('FileManager')
       }
     },
     {
       label: '排序方式',
-      icon: 'finder_sorting',
+      icon: 'menu_sort',
       click: () => {
         console.log('排序方式')
       }
     },
     {
       label: '刷新',
-      icon: 'refresh_2_fill',
+      icon: 'menu_refresh',
       click: () => {
         console.log('刷新')
       }
@@ -56,30 +56,60 @@ function showRightMenu(e: MouseEvent) {
     },
     {
       label: '新建',
-      icon: 'finder_add',
+      icon: 'menu_add',
       click: () => {
         console.log('新建')
       }
     },
     {
+      type: 'line'
+    },
+    {
+      label: '显示设置',
+      icon: 'menu_show',
+      click: () => {
+        console.log('显示设置')
+      }
+    },
+    {
+      label: '个性化',
+      icon: 'menu_person',
+      click: () => {
+        console.log('个性化')
+      }
+    },
+    {
+      type: 'line'
+    },
+    {
       label: '剪切',
-      icon: 'finder_cut',
+      icon: 'menu_cut',
       click: () => {
         console.log('剪切')
       }
     },
     {
       label: '复制',
-      icon: '',
+      icon: 'menu_copy',
       click: () => {
         console.log('复制')
       }
     },
     {
       label: '粘贴',
-      icon: '',
+      icon: 'menu_paste',
       click: () => {
         console.log('粘贴')
+      }
+    },
+    {
+      type: 'line'
+    },
+    {
+      label: '显示更多设置',
+      icon: 'menu_more',
+      click: () => {
+        console.log('显示更多设置')
       }
     }
   ]

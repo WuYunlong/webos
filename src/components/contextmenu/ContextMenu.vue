@@ -128,7 +128,7 @@ li {
   .icon {
     width: 20px;
     height: 20px;
-    font-size: 20px;
+    font-size: 16px;
   }
   .text {
     height: 20px;
