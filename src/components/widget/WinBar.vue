@@ -41,7 +41,7 @@ function mouseLeave() {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .win-bar {
   position: absolute;
   right: 0;

@@ -1,7 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
-import './assets/scss/reset.scss'
+import './assets/less/reset.less'
+// @ts-ignore
 import 'virtual:svg-icons-register'
 
 import Directives from './directives'

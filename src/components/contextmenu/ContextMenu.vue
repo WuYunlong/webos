@@ -26,12 +26,12 @@ import type { MenuItem } from './type'
 const props = defineProps({
   e: {
     type: Object as PropType<MouseEvent>,
-    required: true
+    required: true,
   },
   items: {
     type: Array as PropType<MenuItem[]>,
-    required: true
-  }
+    required: true,
+  },
 })
 
 const emits = defineEmits(['close'])
@@ -43,8 +43,7 @@ const style = computed(() => {
   props.items.forEach((item) => {
     if (item.type === 'line') {
       h += 11
-    }
-    else {
+    } else {
       h += 28
     }
   })
@@ -63,7 +62,7 @@ const style = computed(() => {
   return {
     left: `${left}px`,
     top: `${top}px`,
-    height: `${h}px`
+    height: `${h}px`,
   }
 })
 
@@ -92,7 +91,7 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .context-menu {
   position: absolute;
   min-width: 152px;

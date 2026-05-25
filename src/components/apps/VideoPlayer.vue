@@ -18,15 +18,15 @@ onMounted(() => {
     cssVar: {
       '--art-indicator-scale': 1,
       '--art-indicator-size': '8px',
-      '--art-progress-height': '3px'
-    }
+      '--art-progress-height': '3px',
+    },
     // autoSize: true
   })
   console.log(player)
 })
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .video {
   width: 100%;
   height: 100%;

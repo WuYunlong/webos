@@ -2,7 +2,7 @@
   <div class="os-wallpaper">
     <div class="inner">
       <div class="img-wallpaper">
-        <img :src :alt>
+        <img :src :alt />
       </div>
     </div>
   </div>
@@ -15,7 +15,7 @@ const src = ref('/wallpaper/001/light.jpg')
 const alt = ref('')
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .os-wallpaper {
   position: absolute;
   inset: 0;

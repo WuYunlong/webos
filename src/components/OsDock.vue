@@ -4,20 +4,20 @@
       <div class="left" />
       <div class="center">
         <button class="item">
-          <img src="/icon/Windows.svg" alt="">
+          <img src="/icon/Windows.svg" alt="" />
         </button>
         <button class="item">
-          <img src="/icon/SearchDark.svg" alt="">
+          <img src="/icon/SearchDark.svg" alt="" />
         </button>
         <button class="item">
-          <img src="/icon/DesktopManiger.svg" alt="">
+          <img src="/icon/DesktopManiger.svg" alt="" />
         </button>
         <button class="item active">
-          <img src="/icon/FileExplorer.svg" alt="">
+          <img src="/icon/FileExplorer.svg" alt="" />
           <span class="dot" />
         </button>
         <button class="item">
-          <img src="/icon/MicrosoftEdge.svg" alt="">
+          <img src="/icon/MicrosoftEdge.svg" alt="" />
         </button>
       </div>
       <div class="right" />
@@ -27,7 +27,7 @@
 
 <script setup lang="ts"></script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .os-dock {
   position: absolute;
   left: 0;

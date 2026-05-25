@@ -9,9 +9,9 @@
   <span class="s sl l" />
 </template>
 
-<style scoped lang="scss">
-$size: 8px;
-$sizeHalf: 4px;
+<style scoped lang="less">
+@size: 8px;
+@sizeHalf: 4px;
 .s {
   display: block;
   position: absolute;
@@ -20,55 +20,55 @@ $sizeHalf: 4px;
 .str,
 .sbl,
 .sbr {
-  width: $size;
-  height: $size;
+  width: @size;
+  height: @size;
 }
 .stl {
-  top: -$sizeHalf;
-  left: -$sizeHalf;
+  top: -@sizeHalf;
+  left: -@sizeHalf;
   cursor: nwse-resize;
 }
 .str {
-  top: -$sizeHalf;
-  right: -$sizeHalf;
+  top: -@sizeHalf;
+  right: -@sizeHalf;
   cursor: nesw-resize;
 }
 .sbl {
-  bottom: -$sizeHalf;
-  left: -$sizeHalf;
+  bottom: -@sizeHalf;
+  left: -@sizeHalf;
   cursor: nesw-resize;
 }
 .sbr {
-  bottom: -$sizeHalf;
-  right: -$sizeHalf;
+  bottom: -@sizeHalf;
+  right: -@sizeHalf;
   cursor: nwse-resize;
 }
 .st {
-  top: -$sizeHalf;
-  height: $size;
-  left: $sizeHalf;
-  right: $sizeHalf;
+  top: -@sizeHalf;
+  height: @size;
+  left: @sizeHalf;
+  right: @sizeHalf;
   cursor: ns-resize;
 }
 .sr {
-  top: $sizeHalf;
-  right: -$sizeHalf;
-  bottom: $sizeHalf;
-  width: $size;
+  top: @sizeHalf;
+  right: -@sizeHalf;
+  bottom: @sizeHalf;
+  width: @size;
   cursor: ew-resize;
 }
 .sb {
-  bottom: -$sizeHalf;
-  height: $size;
-  left: $sizeHalf;
-  right: $sizeHalf;
+  bottom: -@sizeHalf;
+  height: @size;
+  left: @sizeHalf;
+  right: @sizeHalf;
   cursor: ns-resize;
 }
 .sl {
-  top: $sizeHalf;
-  left: -$sizeHalf;
-  bottom: $sizeHalf;
-  width: $size;
+  top: @sizeHalf;
+  left: -@sizeHalf;
+  bottom: @sizeHalf;
+  width: @size;
   cursor: ew-resize;
 }
 </style>

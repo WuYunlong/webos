@@ -45,9 +45,9 @@ import type { OptionsWin } from '@/types/window'
 import OsIcon from '@/components/OsIcon.vue'
 
 const props = defineProps({
-  options: { type: Object as PropType<OptionsWin>, required: false, default: () => ({ }) },
+  options: { type: Object as PropType<OptionsWin>, required: false, default: () => ({}) },
   zIndex: { type: Number, default: 100 },
-  index: { type: Number, default: 0 }
+  index: { type: Number, default: 0 },
 })
 
 const options = Object.assign({}, props.options, Options)
@@ -64,7 +64,7 @@ watch(
   () => zIndex.value,
   (v) => {
     wrap.value!.style.zIndex = v.toString()
-  }
+  },
 )
 
 function setWinPos(x: number, y: number, w: number, h: number) {
@@ -124,9 +124,9 @@ function winMouseDown(e: Event) {
   const { clientX, clientY } = e as MouseEvent
   scale = 200 / width
   transformY = clientY - top + 16
-  transformOrigin = `${(clientX - left) * 100 / width}%`
+  transformOrigin = `${((clientX - left) * 100) / width}%`
   const info = { clientX, clientY, width, height, left, top, innerWidth, innerHeight }
-  const moveSub = fromEvent(document, 'mousemove').subscribe(e => winMouseMove(e, info))
+  const moveSub = fromEvent(document, 'mousemove').subscribe((e) => winMouseMove(e, info))
   const upSub = fromEvent(document, 'mouseup').subscribe(() => {
     if (isMoveBar.value) {
       isMoveBar.value = false
@@ -158,8 +158,7 @@ function winMouseMove(e: Event, info: MouseDownInfo) {
     if (typeof winMove === 'function') {
       winMove(e as MouseEvent)
     }
-  }
-  else if (isResize.value) {
+  } else if (isResize.value) {
     if (isResizeT) {
       t = top + cy
       h = height - cy
@@ -213,7 +212,7 @@ defineExpose({ setWinPos, setWinCenter, setWinThumb, setWinUnthumb })
 // console.log(emits)
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .wrap {
   position: absolute;
   left: 0;

@@ -13,16 +13,16 @@ const props = defineProps({
   name: {
     type: String,
     require: true,
-    default: ''
+    default: '',
   },
   className: {
     type: String,
-    default: ''
+    default: '',
   },
   color: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 })
 
 const iconName = computed(() => {
@@ -34,7 +34,7 @@ const svgClass = computed(() => {
 })
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .svg-icon-wrap {
   width: 100%;
   height: 100%;

@@ -2,11 +2,10 @@
   <div class="info" />
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
-<style scoped lang="scss">
-.info  {
+<style scoped lang="less">
+.info {
   width: 100%;
   height: 100%;
   background-color: #f8f8f8;

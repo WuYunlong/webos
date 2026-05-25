@@ -35,83 +35,83 @@ function showRightMenu(e: MouseEvent) {
       icon: 'menu_view',
       click: () => {
         list.value.push('FileManager')
-      }
+      },
     },
     {
       label: '排序方式',
       icon: 'menu_sort',
       click: () => {
         console.log('排序方式')
-      }
+      },
     },
     {
       label: '刷新',
       icon: 'menu_refresh',
       click: () => {
         console.log('刷新')
-      }
+      },
     },
     {
-      type: 'line'
+      type: 'line',
     },
     {
       label: '新建',
       icon: 'menu_add',
       click: () => {
         console.log('新建')
-      }
+      },
     },
     {
-      type: 'line'
+      type: 'line',
     },
     {
       label: '显示设置',
       icon: 'menu_show',
       click: () => {
         console.log('显示设置')
-      }
+      },
     },
     {
       label: '个性化',
       icon: 'menu_person',
       click: () => {
         console.log('个性化')
-      }
+      },
     },
     {
-      type: 'line'
+      type: 'line',
     },
     {
       label: '剪切',
       icon: 'menu_cut',
       click: () => {
         console.log('剪切')
-      }
+      },
     },
     {
       label: '复制',
       icon: 'menu_copy',
       click: () => {
         console.log('复制')
-      }
+      },
     },
     {
       label: '粘贴',
       icon: 'menu_paste',
       click: () => {
         console.log('粘贴')
-      }
+      },
     },
     {
-      type: 'line'
+      type: 'line',
     },
     {
       label: '显示更多设置',
       icon: 'menu_more',
       click: () => {
         console.log('显示更多设置')
-      }
-    }
+      },
+    },
   ]
   showMenu({ e, items })
 }
@@ -148,7 +148,7 @@ provide('winSelect', winSelect)
 provide('winMove', winMove)
 provide('winMoveEnd', winMoveEnd)
 
-function mouseMove(e: MouseEvent, info: { clientX: number, clientY: number }) {
+function mouseMove(e: MouseEvent, info: { clientX: number; clientY: number }) {
   const { clientX, clientY } = e as MouseEvent
   const mw = clientX - info.clientX
   const mh = clientY - info.clientY
@@ -167,7 +167,7 @@ function mouseDown(e: Event) {
   const { clientX, clientY } = e as MouseEvent
   const info = { clientX, clientY }
 
-  const moveSub = fromEvent(document, 'mousemove').subscribe(e => mouseMove(e, info))
+  const moveSub = fromEvent(document, 'mousemove').subscribe((e) => mouseMove(e, info))
   const upSub = fromEvent(document, 'mouseup').subscribe(() => {
     moveSub.unsubscribe()
     upSub.unsubscribe()
@@ -184,7 +184,7 @@ function mouseDown(e: Event) {
 onMounted(async () => {
   await nextTick()
   fromEvent(appsRef.value!, 'mousedown')
-    .pipe(filter(e => e.button === 0 && e.target === appsRef.value))
+    .pipe(filter((e) => e.button === 0 && e.target === appsRef.value))
     .subscribe(mouseDown)
 })
 // getAllWindows 获取所有窗口
@@ -192,7 +192,7 @@ onMounted(async () => {
 // fromId 根据ID获取实例
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .os-apps {
   position: absolute;
   inset: 0;
@@ -227,11 +227,11 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
 
-  $bgColor: #d6d8d9;
-  $radiusSize: 5px;
-  $borderColor: #858788;
-  $hoverBorderColor: #0067c0;
-  $hoverBgColor: #0067c0;
+  @bgColor: #d6d8d9;
+  @radiusSize: 5px;
+  @borderColor: #858788;
+  @hoverBorderColor: #0067c0;
+  @hoverBgColor: #0067c0;
 
   .item {
     width: 98px;
@@ -251,21 +251,21 @@ onMounted(async () => {
       justify-content: space-between;
     }
     .lt {
-      border-top-left-radius: $radiusSize;
+      border-top-left-radius: @radiusSize;
     }
     .lb {
-      border-bottom-left-radius: $radiusSize;
+      border-bottom-left-radius: @radiusSize;
     }
     .rt {
-      border-top-right-radius: $radiusSize;
+      border-top-right-radius: @radiusSize;
     }
     .rb {
-      border-bottom-right-radius: $radiusSize;
+      border-bottom-right-radius: @radiusSize;
     }
     .h.active,
     .h:hover {
-      background-color: $hoverBgColor;
-      border-color: $hoverBorderColor;
+      background-color: @hoverBgColor;
+      border-color: @hoverBorderColor;
     }
   }
   .item-1-1 {
@@ -273,8 +273,8 @@ onMounted(async () => {
     span._02 {
       width: 47px;
       height: 62px;
-      background-color: $bgColor;
-      border: 1px solid $borderColor;
+      background-color: @bgColor;
+      border: 1px solid @borderColor;
     }
   }
   .item-3-1 {
@@ -282,8 +282,8 @@ onMounted(async () => {
     span._02 {
       width: 57px;
       height: 62px;
-      background-color: $bgColor;
-      border: 1px solid $borderColor;
+      background-color: @bgColor;
+      border: 1px solid @borderColor;
     }
     span._02 {
       width: 37px;
@@ -298,8 +298,8 @@ onMounted(async () => {
     span._01,
     span._03,
     span._04 {
-      background-color: $bgColor;
-      border: 1px solid $borderColor;
+      background-color: @bgColor;
+      border: 1px solid @borderColor;
     }
     span._03,
     span._04 {
@@ -319,8 +319,8 @@ onMounted(async () => {
     span._06 {
       height: 29px;
       width: 100%;
-      background-color: $bgColor;
-      border: 1px solid $borderColor;
+      background-color: @bgColor;
+      border: 1px solid @borderColor;
     }
   }
   .item-1-1-1 {
@@ -329,8 +329,8 @@ onMounted(async () => {
     span._03 {
       width: 30px;
       height: 62px;
-      background-color: $bgColor;
-      border: 1px solid $borderColor;
+      background-color: @bgColor;
+      border: 1px solid @borderColor;
     }
   }
   .item-1-2-1 {
@@ -339,8 +339,8 @@ onMounted(async () => {
     span._03 {
       width: 25px;
       height: 62px;
-      background-color: $bgColor;
-      border: 1px solid $borderColor;
+      background-color: @bgColor;
+      border: 1px solid @borderColor;
     }
     span._02 {
       width: 40px;

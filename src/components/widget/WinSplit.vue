@@ -72,13 +72,13 @@ const posArr = [
   [66.666, 0, 33.333, 100],
   [0, 0, 25, 100],
   [25, 0, 50, 100],
-  [75, 0, 25, 100]
+  [75, 0, 25, 100],
 ]
 function setPlaceHolder(name: string) {
   const index = Number.parseInt(name.replace('_', ''), 10)
-  const pos = posArr[index]
+  const pos = posArr[index] as number[]
   const { width, height } = tipsWrapRef.value!.getBoundingClientRect()
-  tipsRef.value!.style.transform = `translate3d(${(pos[0] / 100) * width}px, ${(pos[1] / 100) * height}px, 0)`
+  tipsRef.value!.style.transform = `translate3d(${(pos[0]! / 100) * width}px, ${(pos[1]! / 100) * height}px, 0)`
   tipsRef.value!.style.width = `${pos[2]}%`
   tipsRef.value!.style.height = `${pos[3]}%`
 }
@@ -93,11 +93,10 @@ function checkMouseMove(e: MouseEvent) {
     if (inBox(e, el.getBoundingClientRect())) {
       el.classList.add('selected')
       if (nowInBoxName !== el.classList[1]) {
-        nowInBoxName = el.classList[1]
+        nowInBoxName = el.classList[1] as string
         setPlaceHolder(nowInBoxName)
       }
-    }
-    else {
+    } else {
       el.classList.remove('selected')
     }
   }
@@ -113,11 +112,10 @@ watch(
   (v) => {
     if (v && typeof inSplitBox == 'function') {
       inSplitBox()
-    }
-    else if (!v && typeof outSplitBox == 'function') {
+    } else if (!v && typeof outSplitBox == 'function') {
       outSplitBox()
     }
-  }
+  },
 )
 
 defineExpose({ checkMouseMove, reset })
@@ -128,7 +126,7 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .win-split-wrap {
   position: absolute;
   left: 50%;
@@ -164,11 +162,11 @@ onMounted(async () => {
   justify-content: space-between;
 }
 
-$radiusSize: 5px;
-$bgColor: #d6d8d9;
-$borderColor: #858788;
-$hoverBorderColor: #0067c0;
-$hoverBgColor: #0067c0;
+@radiusSize: 4px;
+@bgColor: #d6d8d9;
+@borderColor: #858788;
+@hoverBorderColor: #0067c0;
+@hoverBgColor: #0067c0;
 
 .item {
   width: 98px;
@@ -186,16 +184,16 @@ $hoverBgColor: #0067c0;
     display: block;
     position: absolute;
     box-sizing: border-box;
-    background-color: $bgColor;
-    border: 1px solid $borderColor;
+    background-color: @bgColor;
+    // border: 1px solid @borderColor;
   }
   .s.selected,
   .s:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: $hoverBgColor;
-    border-color: $hoverBorderColor;
+    background-color: @hoverBgColor;
+    // border-color: @hoverBorderColor;
   }
 }
 
@@ -204,63 +202,63 @@ $hoverBgColor: #0067c0;
   height: 62px;
   left: 0;
   top: 0;
-  border-radius: $radiusSize 0 0 $radiusSize;
+  border-radius: @radiusSize 0 0 @radiusSize;
 }
 ._02 {
   width: 47px;
   height: 62px;
   top: 0;
   right: 0;
-  border-radius: 0 $radiusSize $radiusSize 0;
+  border-radius: 0 @radiusSize @radiusSize 0;
 }
 ._03 {
   width: 57px;
   height: 62px;
   left: 0;
   top: 0;
-  border-radius: $radiusSize 0 0 $radiusSize;
+  border-radius: @radiusSize 0 0 @radiusSize;
 }
 ._04 {
   width: 37px;
   height: 62px;
   top: 0;
   right: 0;
-  border-radius: 0 $radiusSize $radiusSize 0;
+  border-radius: 0 @radiusSize @radiusSize 0;
 }
 ._05 {
   width: 47px;
   height: 29px;
   top: 0;
   right: 0;
-  border-top-right-radius: $radiusSize;
+  border-top-right-radius: @radiusSize;
 }
 ._06 {
   width: 47px;
   height: 29px;
   bottom: 0;
   right: 0;
-  border-bottom-right-radius: $radiusSize;
+  border-bottom-right-radius: @radiusSize;
 }
 ._07 {
   width: 47px;
   height: 29px;
   left: 0;
   top: 0;
-  border-top-left-radius: $radiusSize;
+  border-top-left-radius: @radiusSize;
 }
 ._08 {
   width: 47px;
   height: 29px;
   left: 0;
   bottom: 0;
-  border-bottom-left-radius: $radiusSize;
+  border-bottom-left-radius: @radiusSize;
 }
 ._09 {
   top: 0;
   left: 0;
   height: 62px;
   width: 30px;
-  border-radius: $radiusSize 0 0 $radiusSize;
+  border-radius: @radiusSize 0 0 @radiusSize;
 }
 ._10 {
   top: 0;
@@ -273,14 +271,14 @@ $hoverBgColor: #0067c0;
   right: 0;
   height: 62px;
   width: 30px;
-  border-radius: 0 $radiusSize $radiusSize 0;
+  border-radius: 0 @radiusSize @radiusSize 0;
 }
 ._12 {
   top: 0;
   left: 0;
   height: 62px;
   width: 25px;
-  border-radius: $radiusSize 0 0 $radiusSize;
+  border-radius: @radiusSize 0 0 @radiusSize;
 }
 ._13 {
   top: 0;
@@ -293,7 +291,7 @@ $hoverBgColor: #0067c0;
   right: 0;
   height: 62px;
   width: 25px;
-  border-radius: 0 $radiusSize $radiusSize 0;
+  border-radius: 0 @radiusSize @radiusSize 0;
 }
 
 .win-split-placeholder {
