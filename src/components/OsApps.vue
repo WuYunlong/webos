@@ -1,5 +1,5 @@
 <template>
-  <div ref="appsRef" class="os-apps" @contextmenu.prevent.stop="(e) => showRightMenu(e)">
+  <div ref="appsRef" class="os-apps" @contextmenu.prevent.stop="e => showRightMenu(e)">
     <span ref="selectRef" class="select" />
     <WinSplit ref="winSplitRef" />
     <OsWindow v-for="(item, index) in list" :key="index" ref="apps" :index>
@@ -17,8 +17,6 @@ import type { MenuItem } from './contextmenu/type'
 
 import OsWindow from './OsWindow.vue'
 import WinSplit from './widget/WinSplit.vue'
-import type { MoveRes } from '@/utils'
-import { bindMouseMove } from '@/utils'
 
 const list = ref<string[]>([])
 const app = ref()
@@ -35,83 +33,83 @@ function showRightMenu(e: MouseEvent) {
       icon: 'menu_view',
       click: () => {
         list.value.push('FileManager')
-      },
+      }
     },
     {
       label: '排序方式',
       icon: 'menu_sort',
       click: () => {
         console.log('排序方式')
-      },
+      }
     },
     {
       label: '刷新',
       icon: 'menu_refresh',
       click: () => {
         console.log('刷新')
-      },
+      }
     },
     {
-      type: 'line',
+      type: 'line'
     },
     {
       label: '新建',
       icon: 'menu_add',
       click: () => {
         console.log('新建')
-      },
+      }
     },
     {
-      type: 'line',
+      type: 'line'
     },
     {
       label: '显示设置',
       icon: 'menu_show',
       click: () => {
         console.log('显示设置')
-      },
+      }
     },
     {
       label: '个性化',
       icon: 'menu_person',
       click: () => {
         console.log('个性化')
-      },
+      }
     },
     {
-      type: 'line',
+      type: 'line'
     },
     {
       label: '剪切',
       icon: 'menu_cut',
       click: () => {
         console.log('剪切')
-      },
+      }
     },
     {
       label: '复制',
       icon: 'menu_copy',
       click: () => {
         console.log('复制')
-      },
+      }
     },
     {
       label: '粘贴',
       icon: 'menu_paste',
       click: () => {
         console.log('粘贴')
-      },
+      }
     },
     {
-      type: 'line',
+      type: 'line'
     },
     {
       label: '显示更多设置',
       icon: 'menu_more',
       click: () => {
         console.log('显示更多设置')
-      },
-    },
+      }
+    }
   ]
   showMenu({ e, items })
 }
@@ -167,7 +165,7 @@ function mouseDown(e: Event) {
   const { clientX, clientY } = e as MouseEvent
   const info = { clientX, clientY }
 
-  const moveSub = fromEvent(document, 'mousemove').subscribe((e) => mouseMove(e, info))
+  const moveSub = fromEvent(document, 'mousemove').subscribe(e => mouseMove(e as MouseEvent, info))
   const upSub = fromEvent(document, 'mouseup').subscribe(() => {
     moveSub.unsubscribe()
     upSub.unsubscribe()
@@ -184,12 +182,9 @@ function mouseDown(e: Event) {
 onMounted(async () => {
   await nextTick()
   fromEvent(appsRef.value!, 'mousedown')
-    .pipe(filter((e) => e.button === 0 && e.target === appsRef.value))
+    .pipe(filter(e => (e as MouseEvent).button === 0 && e.target === appsRef.value))
     .subscribe(mouseDown)
 })
-// getAllWindows 获取所有窗口
-// getFocusedWindow 获取当前窗口
-// fromId 根据ID获取实例
 </script>
 
 <style scoped lang="less">

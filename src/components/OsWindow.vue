@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { inject, nextTick, onMounted, ref, watch } from 'vue'
 import { fromEvent } from 'rxjs'
 
 import type { PropType } from 'vue'
@@ -47,7 +47,7 @@ import OsIcon from '@/components/OsIcon.vue'
 const props = defineProps({
   options: { type: Object as PropType<OptionsWin>, required: false, default: () => ({}) },
   zIndex: { type: Number, default: 100 },
-  index: { type: Number, default: 0 },
+  index: { type: Number, default: 0 }
 })
 
 const options = Object.assign({}, props.options, Options)
@@ -62,9 +62,9 @@ const zIndex = ref<number>(props.zIndex)
 
 watch(
   () => zIndex.value,
-  (v) => {
+  v => {
     wrap.value!.style.zIndex = v.toString()
-  },
+  }
 )
 
 function setWinPos(x: number, y: number, w: number, h: number) {
@@ -126,7 +126,7 @@ function winMouseDown(e: Event) {
   transformY = clientY - top + 16
   transformOrigin = `${((clientX - left) * 100) / width}%`
   const info = { clientX, clientY, width, height, left, top, innerWidth, innerHeight }
-  const moveSub = fromEvent(document, 'mousemove').subscribe((e) => winMouseMove(e, info))
+  const moveSub = fromEvent(document, 'mousemove').subscribe(e => winMouseMove(e, info))
   const upSub = fromEvent(document, 'mouseup').subscribe(() => {
     if (isMoveBar.value) {
       isMoveBar.value = false
@@ -198,7 +198,7 @@ function setWinUnthumb() {
 
 onMounted(async () => {
   await nextTick()
-  setWinPos(options.x, options.y, options.width, options.height)
+  setWinPos(options.x!, options.y!, options.width!, options.height!)
   wrap.value!.style.zIndex = zIndex.value.toString()
   fromEvent(wrap.value!, 'mousedown').subscribe(winMouseDown)
 })

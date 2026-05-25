@@ -13,16 +13,16 @@ const props = defineProps({
   name: {
     type: String,
     require: true,
-    default: '',
+    default: ''
   },
   className: {
     type: String,
-    default: '',
+    default: ''
   },
   color: {
     type: String,
-    default: '',
-  },
+    default: ''
+  }
 })
 
 const iconName = computed(() => {

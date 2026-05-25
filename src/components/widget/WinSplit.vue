@@ -147,11 +147,11 @@ onMounted(async () => {
 
 .win-split {
   position: relative;
-  padding: 12px;
+  padding: 9px;
   box-sizing: border-box;
   z-index: 10;
   border-radius: 8px;
-  border: 1px solid #a6b1b9;
+  // border: 1px solid #a6b1b9;
   background-color: #f1f5f7;
   // backdrop-filter: blur(20px);
   box-shadow: 0 10px 16px rgba(0, 0, 0, 0.05);

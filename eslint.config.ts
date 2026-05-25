@@ -12,7 +12,7 @@ import skipFormatting from 'eslint-config-prettier/flat'
 export default defineConfigWithVueTs(
   {
     name: 'app/files-to-lint',
-    files: ['**/*.{vue,ts,mts,tsx}'],
+    files: ['**/*.{vue,ts,mts,tsx}']
   },
 
   globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
@@ -24,5 +24,5 @@ export default defineConfigWithVueTs(
 
   skipFormatting,
 
-  { rules: { '@typescript-eslint/ban-ts-comment': 'off' } },
+  { rules: { '@typescript-eslint/ban-ts-comment': 'off' } }
 )

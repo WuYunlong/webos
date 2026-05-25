@@ -8,7 +8,12 @@ export interface MoveRes {
   move: Point
 }
 
-export function bindMouseMove(el: HTMLElement, move: (res: MoveRes, e?: MouseEvent) => void, down: (e: MouseEvent) => boolean = () => true, up: () => void = () => {}) {
+export function bindMouseMove(
+  el: HTMLElement,
+  move: (res: MoveRes, e?: MouseEvent) => void,
+  down: (e: MouseEvent) => boolean = () => true,
+  up: () => void = () => {}
+) {
   let downClientX = 0
   let downClientY = 0
 

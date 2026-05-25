@@ -26,12 +26,12 @@ import type { MenuItem } from './type'
 const props = defineProps({
   e: {
     type: Object as PropType<MouseEvent>,
-    required: true,
+    required: true
   },
   items: {
     type: Array as PropType<MenuItem[]>,
-    required: true,
-  },
+    required: true
+  }
 })
 
 const emits = defineEmits(['close'])
@@ -40,7 +40,7 @@ const el = ref<HTMLElement>()
 
 const style = computed(() => {
   let h = 12
-  props.items.forEach((item) => {
+  props.items.forEach(item => {
     if (item.type === 'line') {
       h += 11
     } else {
@@ -62,7 +62,7 @@ const style = computed(() => {
   return {
     left: `${left}px`,
     top: `${top}px`,
-    height: `${h}px`,
+    height: `${h}px`
   }
 })
 

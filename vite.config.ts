@@ -14,6 +14,7 @@ export default defineConfig({
     createSvgIconsPlugin({
       iconDirs: [
         path.resolve(__dirname, 'public/svg'),
+        path.resolve(__dirname, 'public/svg/Finder'),
         path.resolve(__dirname, 'public/svg/Finder')
       ],
       symbolId: 'icon-[dir]-[name]'
