@@ -400,6 +400,7 @@ defineExpose({ setWinCenter, setWinThumb, setWinUnthumb })
   gap: 8px;
   padding-left: 12px;
   min-width: 0;
+  user-select: none;
 }
 
 .app-icon {
