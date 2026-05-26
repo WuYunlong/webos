@@ -1,28 +1,26 @@
 <template>
   <OsDesktop>
     <OsDock />
-    <OsApps>
-      <OsWindow />
-    </OsApps>
+    <OsWorkspace />
+    <OsWindows />
     <OsWallpaper />
   </OsDesktop>
 </template>
 
 <script setup lang="ts">
-import { fromEvent } from 'rxjs'
+import { onBeforeUnmount } from 'vue'
+import { fromEvent, Subscription } from 'rxjs'
 import OsDesktop from './components/OsDesktop.vue'
 import OsWallpaper from './components/OsWallpaper.vue'
-import OsWindow from './components/OsWindow.vue'
 import OsDock from './components/OsDock.vue'
-import OsApps from './components/OsApps.vue'
+import OsWorkspace from './components/OsWorkspace.vue'
+import OsWindows from './components/OsWindows.vue'
 
-fromEvent(document, 'wheel', { passive: false }).subscribe(e => e.preventDefault())
+const subscriptions = new Subscription()
+
+subscriptions.add(fromEvent(document, 'wheel', { passive: false }).subscribe(e => e.preventDefault()))
+
+onBeforeUnmount(() => {
+  subscriptions.unsubscribe()
+})
 </script>
-
-<style scoped lang="less">
-.test {
-  width: 200px;
-  height: 200px;
-  background-color: #f00;
-}
-</style>

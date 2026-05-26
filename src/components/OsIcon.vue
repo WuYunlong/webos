@@ -1,5 +1,5 @@
 <template>
-  <span class="svg-icon-wrap">
+  <span class="svg-icon-wrap" :style="{ color }">
     <svg :class="svgClass" aria-hidden="true">
       <use :xlink:href="iconName" />
     </svg>
@@ -12,7 +12,7 @@ import { computed } from 'vue'
 const props = defineProps({
   name: {
     type: String,
-    require: true,
+    required: true,
     default: ''
   },
   className: {

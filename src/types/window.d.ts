@@ -1,3 +1,14 @@
+export interface Rect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export type WindowMode = 'normal' | 'minimized' | 'maximized' | 'fullscreen'
+
+export type WindowLifecycle = 'created' | 'visible' | 'hidden' | 'closed' | 'destroyed'
+
 export interface OptionsWin {
   width?: number
   height?: number

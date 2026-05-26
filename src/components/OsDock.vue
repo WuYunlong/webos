@@ -3,21 +3,25 @@
     <div class="inner">
       <div class="left" />
       <div class="center">
-        <button class="item">
+        <button class="item static" type="button">
           <img src="/icon/Windows.svg" alt="" />
         </button>
-        <button class="item">
+        <button class="item static" type="button">
           <img src="/icon/SearchDark.svg" alt="" />
         </button>
-        <button class="item">
+        <button class="item static" type="button">
           <img src="/icon/DesktopManiger.svg" alt="" />
         </button>
-        <button class="item active">
-          <img src="/icon/FileExplorer.svg" alt="" />
+        <button
+          v-for="appId in pinnedApps"
+          :key="appId"
+          class="item"
+          :class="{ active: isVisible(appId), opened: isOpened(appId) }"
+          type="button"
+          @click="openApp(appId)"
+        >
+          <img :src="appDefinitions[appId].icon" :alt="appDefinitions[appId].title" />
           <span class="dot" />
-        </button>
-        <button class="item">
-          <img src="/icon/MicrosoftEdge.svg" alt="" />
         </button>
       </div>
       <div class="right" />
@@ -25,7 +29,17 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { appDefinitions, openApp, pinnedApps, windows } from '@/state/windows'
+
+function isOpened(appId: (typeof pinnedApps)[number]) {
+  return windows.value.some(item => item.appId === appId)
+}
+
+function isVisible(appId: (typeof pinnedApps)[number]) {
+  return windows.value.some(item => item.appId === appId && item.mode !== 'minimized' && item.isVisible)
+}
+</script>
 
 <style scoped lang="less">
 .os-dock {
@@ -96,16 +110,19 @@
       transition: all 0.3s;
       z-index: 0;
     }
-    &.active .dot {
+    &.opened .dot {
       display: block;
       width: 16px;
       height: 3px;
-      background-color: #0067c0;
+      background-color: rgba(0, 103, 192, 0.45);
       position: absolute;
       left: 50%;
       bottom: 0;
       margin-left: -8px;
       border-radius: 2px;
+    }
+    &.active .dot {
+      background-color: #0067c0;
     }
     &.active,
     &:hover,
@@ -115,6 +132,10 @@
     }
     &:active img {
       transform: scale(0.8);
+    }
+
+    &.static .dot {
+      display: none;
     }
   }
 }
